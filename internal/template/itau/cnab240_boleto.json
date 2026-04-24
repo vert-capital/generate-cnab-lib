@@ -1,0 +1,1349 @@
+{
+  "name": "cnab240_boleto",
+  "bank_code": "341",
+  "cnab_type": "240",
+  "file_type": "REMESSA",
+  "version": "1.0",
+  "line_length": 240,
+  "detail_segments": [
+    "J",
+    "J-52",
+    "B"
+  ],
+  "description": "Layout CNAB 240 para pagamentos de Boletos (Títulos de Cobrança) via Itaú - SISPAG Versão 80",
+  "segments": {
+    "header_arquivo": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "value": "0000",
+        "description": "Lote de Serviço - Header de arquivo"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "0",
+        "description": "Tipo de Registro - Header de arquivo"
+      },
+      "brancos_1": {
+        "pos": [
+          9,
+          14
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "layout_arquivo": {
+        "pos": [
+          15,
+          17
+        ],
+        "type": "num",
+        "value": "080",
+        "description": "Nº da Versão do Layout do Arquivo"
+      },
+      "tipo_inscricao": {
+        "pos": [
+          18,
+          18
+        ],
+        "type": "num",
+        "description": "1=CPF, 2=CNPJ",
+        "source": "company.inscription_type"
+      },
+      "numero_inscricao": {
+        "pos": [
+          19,
+          32
+        ],
+        "type": "num",
+        "description": "CNPJ da empresa debitada",
+        "source": "company.cnpj"
+      },
+      "brancos_2": {
+        "pos": [
+          33,
+          52
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "agencia": {
+        "pos": [
+          53,
+          57
+        ],
+        "type": "num",
+        "description": "Número da Agência debitada",
+        "source": "company.agency"
+      },
+      "brancos_3": {
+        "pos": [
+          58,
+          58
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "conta": {
+        "pos": [
+          59,
+          70
+        ],
+        "type": "num",
+        "description": "Número da Conta Corrente debitada",
+        "source": "company.account"
+      },
+      "brancos_4": {
+        "pos": [
+          71,
+          71
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "dac": {
+        "pos": [
+          72,
+          72
+        ],
+        "type": "num",
+        "description": "DAC da Agência/Conta debitada",
+        "source": "company.account_digit"
+      },
+      "nome_empresa": {
+        "pos": [
+          73,
+          102
+        ],
+        "type": "alfa",
+        "description": "Nome da Empresa",
+        "source": "company.name"
+      },
+      "nome_banco": {
+        "pos": [
+          103,
+          132
+        ],
+        "type": "alfa",
+        "value": "BANCO ITAU",
+        "description": "Nome do Banco"
+      },
+      "brancos_5": {
+        "pos": [
+          133,
+          142
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "codigo_remessa": {
+        "pos": [
+          143,
+          143
+        ],
+        "type": "num",
+        "description": "1=Remessa, 2=Retorno",
+        "value": "1"
+      },
+      "data_geracao": {
+        "pos": [
+          144,
+          151
+        ],
+        "type": "num",
+        "source": "context.now_date_ddmmyyyy",
+        "description": "Data de geração do arquivo (DDMMAAAA)"
+      },
+      "hora_geracao": {
+        "pos": [
+          152,
+          157
+        ],
+        "type": "num",
+        "description": "Hora de geração (HHMMSS)",
+        "source": "context.now_time"
+      },
+      "zeros": {
+        "pos": [
+          158,
+          166
+        ],
+        "type": "num",
+        "description": "Complemento de registro",
+        "value": "0"
+      },
+      "unidade_densidade": {
+        "pos": [
+          167,
+          171
+        ],
+        "type": "num",
+        "description": "Densidade de gravação do arquivo",
+        "value": "00000"
+      },
+      "brancos_6": {
+        "pos": [
+          172,
+          240
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      }
+    },
+    "header_lote": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "1",
+        "description": "Tipo de Registro - Header de lote"
+      },
+      "tipo_operacao": {
+        "pos": [
+          9,
+          9
+        ],
+        "type": "alfa",
+        "value": "C",
+        "description": "C=Crédito"
+      },
+      "tipo_pagamento": {
+        "pos": [
+          10,
+          11
+        ],
+        "type": "num",
+        "value": "20",
+        "description": "20=Fornecedores (Boleto de Títulos em Cobrança no Itaú)"
+      },
+      "forma_pagamento": {
+        "pos": [
+          12,
+          13
+        ],
+        "type": "num",
+        "source": "payment.payment_method",
+        "description": "30=Bloqueto do Itaú, 31=Bloqueto de Outros Bancos, 32=Nota Fiscal"
+      },
+      "layout_lote": {
+        "pos": [
+          14,
+          16
+        ],
+        "type": "num",
+        "value": "030",
+        "description": "Nº da Versão do Layout do Lote"
+      },
+      "brancos_1": {
+        "pos": [
+          17,
+          17
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "tipo_inscricao": {
+        "pos": [
+          18,
+          18
+        ],
+        "type": "num",
+        "description": "1=CPF, 2=CNPJ",
+        "source": "company.inscription_type"
+      },
+      "numero_inscricao": {
+        "pos": [
+          19,
+          32
+        ],
+        "type": "num",
+        "description": "CNPJ da empresa debitada",
+        "source": "company.cnpj"
+      },
+      "brancos_2": {
+        "pos": [
+          33,
+          52
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "agencia": {
+        "pos": [
+          53,
+          57
+        ],
+        "type": "num",
+        "description": "Número da Agência debitada",
+        "source": "company.agency"
+      },
+      "brancos_3": {
+        "pos": [
+          58,
+          58
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "conta": {
+        "pos": [
+          59,
+          70
+        ],
+        "type": "num",
+        "description": "Número da Conta Corrente debitada",
+        "source": "company.account"
+      },
+      "brancos_4": {
+        "pos": [
+          71,
+          71
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "dac": {
+        "pos": [
+          72,
+          72
+        ],
+        "type": "num",
+        "description": "DAC da Agência/Conta",
+        "source": "company.account_digit"
+      },
+      "nome_empresa": {
+        "pos": [
+          73,
+          102
+        ],
+        "type": "alfa",
+        "description": "Nome da Empresa",
+        "source": "company.name"
+      },
+      "finalidade_lote": {
+        "pos": [
+          103,
+          132
+        ],
+        "type": "alfa",
+        "description": "Finalidade dos pagamentos do lote",
+        "value": ""
+      },
+      "historico_cc": {
+        "pos": [
+          133,
+          142
+        ],
+        "type": "alfa",
+        "description": "Complemento histórico C/C debitada",
+        "value": ""
+      },
+      "endereco_empresa": {
+        "pos": [
+          143,
+          172
+        ],
+        "type": "alfa",
+        "description": "Endereço da empresa",
+        "source": "company.address"
+      },
+      "numero": {
+        "pos": [
+          173,
+          177
+        ],
+        "type": "num",
+        "description": "Número do local",
+        "source": "company.address_number"
+      },
+      "complemento": {
+        "pos": [
+          178,
+          192
+        ],
+        "type": "alfa",
+        "description": "Complemento do endereço",
+        "source": "company.address_complement"
+      },
+      "cidade": {
+        "pos": [
+          193,
+          212
+        ],
+        "type": "alfa",
+        "description": "Nome da cidade",
+        "source": "company.city"
+      },
+      "cep": {
+        "pos": [
+          213,
+          220
+        ],
+        "type": "num",
+        "description": "CEP",
+        "source": "company.cep"
+      },
+      "estado": {
+        "pos": [
+          221,
+          222
+        ],
+        "type": "alfa",
+        "description": "Sigla do estado",
+        "source": "company.state"
+      },
+      "brancos_5": {
+        "pos": [
+          223,
+          230
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências p/ retorno"
+      }
+    },
+    "segmento_j": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe"
+      },
+      "numero_registro": {
+        "pos": [
+          9,
+          13
+        ],
+        "type": "num",
+        "description": "Nº Sequencial do Registro no Lote",
+        "source": "context.seq_num"
+      },
+      "segmento": {
+        "pos": [
+          14,
+          14
+        ],
+        "type": "alfa",
+        "value": "J",
+        "description": "Código do Segmento"
+      },
+      "tipo_movimento": {
+        "pos": [
+          15,
+          17
+        ],
+        "type": "num",
+        "value": "000",
+        "description": "000=Inclusão, 999=Exclusão"
+      },
+      "banco_favorecido": {
+        "pos": [
+          18,
+          20
+        ],
+        "type": "num",
+        "source": "payment.barcode_bank",
+        "description": "Cód. de Barras - Código Banco Favorecido (pos 1-3 do barcode)"
+      },
+      "moeda": {
+        "pos": [
+          21,
+          21
+        ],
+        "type": "num",
+        "source": "payment.barcode_currency",
+        "description": "Cód. de Barras - Código da Moeda (pos 4 do barcode)"
+      },
+      "dv_codigo_barras": {
+        "pos": [
+          22,
+          22
+        ],
+        "type": "num",
+        "source": "payment.barcode_dv",
+        "description": "Cód. de Barras - Dígito Verif. (pos 5 do barcode)"
+      },
+      "vencimento": {
+        "pos": [
+          23,
+          26
+        ],
+        "type": "num",
+        "source": "payment.barcode_due_factor",
+        "description": "Cód. de Barras - Fator de Vencimento (pos 6-9 do barcode)"
+      },
+      "valor": {
+        "pos": [
+          27,
+          36
+        ],
+        "type": "num",
+        "source": "payment.barcode_amount",
+        "description": "Cód. de Barras - Valor (pos 10-19 do barcode)"
+      },
+      "campo_livre": {
+        "pos": [
+          37,
+          61
+        ],
+        "type": "num",
+        "source": "payment.barcode_free_field",
+        "description": "Cód. de Barras - Campo Livre (pos 20-44 do barcode)"
+      },
+      "nome_favorecido": {
+        "pos": [
+          62,
+          91
+        ],
+        "type": "alfa",
+        "description": "Nome do Favorecido",
+        "source": "payment.recipient_name"
+      },
+      "data_vencto": {
+        "pos": [
+          92,
+          99
+        ],
+        "type": "num",
+        "description": "Data do Vencimento (Nominal)",
+        "source": "payment.due_date_ddmmyyyy"
+      },
+      "valor_titulo": {
+        "pos": [
+          100,
+          114
+        ],
+        "type": "num",
+        "description": "Valor do Título (Nominal)",
+        "source": "payment.amount"
+      },
+      "descontos": {
+        "pos": [
+          115,
+          129
+        ],
+        "type": "num",
+        "description": "Valor do Desconto + Abatimento",
+        "source": "payment.discount"
+      },
+      "acrescimos": {
+        "pos": [
+          130,
+          144
+        ],
+        "type": "num",
+        "description": "Valor da Mora + Multa",
+        "source": "payment.interest"
+      },
+      "data_pagamento": {
+        "pos": [
+          145,
+          152
+        ],
+        "type": "num",
+        "description": "Data do Pagamento",
+        "source": "payment.due_date_ddmmyyyy"
+      },
+      "valor_pagamento": {
+        "pos": [
+          153,
+          167
+        ],
+        "type": "num",
+        "description": "Valor do Pagamento",
+        "source": "payment.amount"
+      },
+      "zeros": {
+        "pos": [
+          168,
+          182
+        ],
+        "type": "num",
+        "description": "Complemento de registro",
+        "value": "0"
+      },
+      "seu_numero": {
+        "pos": [
+          183,
+          202
+        ],
+        "type": "alfa",
+        "description": "Nº do documento atribuído pela empresa - NOTA 43",
+        "source": "payment.external_id"
+      },
+      "brancos": {
+        "pos": [
+          203,
+          215
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "nosso_numero": {
+        "pos": [
+          216,
+          230
+        ],
+        "type": "alfa",
+        "description": "Nº atribuído pelo Banco (retorno)",
+        "source": "payment.our_number"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências no retorno"
+      }
+    },
+    "segmento_j52": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe"
+      },
+      "numero_registro": {
+        "pos": [
+          9,
+          13
+        ],
+        "type": "num",
+        "description": "Nº Sequencial do Registro no Lote",
+        "source": "context.seq_num"
+      },
+      "segmento": {
+        "pos": [
+          14,
+          14
+        ],
+        "type": "alfa",
+        "value": "J",
+        "description": "Código do Segmento"
+      },
+      "tipo_movimento": {
+        "pos": [
+          15,
+          17
+        ],
+        "type": "num",
+        "value": "000",
+        "description": "000=Inclusão, 999=Exclusão"
+      },
+      "codigo_registro": {
+        "pos": [
+          18,
+          19
+        ],
+        "type": "num",
+        "value": "52",
+        "description": "Identificação do Registro Opcional - sempre '52' para boletos"
+      },
+      "tipo_inscricao_sacado": {
+        "pos": [
+          20,
+          20
+        ],
+        "type": "num",
+        "value": "2",
+        "description": "1=CPF, 2=CNPJ do Sacado (Pagador)"
+      },
+      "numero_inscricao_sacado": {
+        "pos": [
+          21,
+          35
+        ],
+        "type": "num",
+        "source": "company.cnpj",
+        "description": "CPF/CNPJ do Sacado (Pagador)"
+      },
+      "nome_sacado": {
+        "pos": [
+          36,
+          75
+        ],
+        "type": "alfa",
+        "source": "company.company_name",
+        "description": "Nome do Sacado (Pagador)"
+      },
+      "tipo_inscricao_cedente": {
+        "pos": [
+          76,
+          76
+        ],
+        "type": "num",
+        "source": "payment.recipient_document_type",
+        "description": "1=CPF, 2=CNPJ do Cedente (Beneficiário)"
+      },
+      "numero_inscricao_cedente": {
+        "pos": [
+          77,
+          91
+        ],
+        "type": "num",
+        "source": "payment.recipient_document",
+        "description": "CPF/CNPJ do Cedente (Beneficiário)"
+      },
+      "nome_cedente": {
+        "pos": [
+          92,
+          131
+        ],
+        "type": "alfa",
+        "source": "payment.recipient_name",
+        "description": "Nome do Cedente (Beneficiário)"
+      },
+      "tipo_inscricao_sacador": {
+        "pos": [
+          132,
+          132
+        ],
+        "type": "num",
+        "value": "0",
+        "description": "0=Não informado, 1=CPF, 2=CNPJ do Sacador Avalista"
+      },
+      "numero_inscricao_sacador": {
+        "pos": [
+          133,
+          147
+        ],
+        "type": "num",
+        "value": "000000000000000",
+        "description": "CPF/CNPJ do Sacador Avalista"
+      },
+      "nome_sacador": {
+        "pos": [
+          148,
+          187
+        ],
+        "type": "alfa",
+        "description": "Nome do Sacador Avalista",
+        "source": "payment.metadata.nome_sacador"
+      },
+      "brancos": {
+        "pos": [
+          188,
+          230
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências no retorno"
+      }
+    },
+    "segmento_b": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe"
+      },
+      "numero_registro": {
+        "pos": [
+          9,
+          13
+        ],
+        "type": "num",
+        "description": "Nº Sequencial do Registro no Lote",
+        "source": "context.seq_num"
+      },
+      "codigo_segmento": {
+        "pos": [
+          14,
+          14
+        ],
+        "type": "alfa",
+        "value": "B",
+        "description": "Código do Segmento"
+      },
+      "brancos_1": {
+        "pos": [
+          15,
+          17
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "tipo_inscricao": {
+        "pos": [
+          18,
+          18
+        ],
+        "type": "num",
+        "description": "1=CPF, 2=CNPJ",
+        "source": "payment.recipient_document_type"
+      },
+      "numero_inscricao": {
+        "pos": [
+          19,
+          32
+        ],
+        "type": "num",
+        "description": "CPF/CNPJ do favorecido",
+        "source": "payment.recipient_document"
+      },
+      "endereco": {
+        "pos": [
+          33,
+          62
+        ],
+        "type": "alfa",
+        "description": "Logradouro",
+        "source": "payment.metadata.endereco"
+      },
+      "numero": {
+        "pos": [
+          63,
+          67
+        ],
+        "type": "num",
+        "description": "Número do local",
+        "source": "payment.metadata.numero"
+      },
+      "complemento": {
+        "pos": [
+          68,
+          82
+        ],
+        "type": "alfa",
+        "description": "Complemento",
+        "source": "payment.metadata.complemento"
+      },
+      "bairro": {
+        "pos": [
+          83,
+          97
+        ],
+        "type": "alfa",
+        "description": "Bairro",
+        "source": "payment.metadata.bairro"
+      },
+      "cidade": {
+        "pos": [
+          98,
+          117
+        ],
+        "type": "alfa",
+        "description": "Cidade",
+        "source": "payment.metadata.cidade"
+      },
+      "cep": {
+        "pos": [
+          118,
+          125
+        ],
+        "type": "num",
+        "description": "CEP",
+        "source": "payment.metadata.cep"
+      },
+      "estado": {
+        "pos": [
+          126,
+          127
+        ],
+        "type": "alfa",
+        "description": "UF",
+        "source": "payment.metadata.estado"
+      },
+      "email": {
+        "pos": [
+          128,
+          227
+        ],
+        "type": "alfa",
+        "description": "Endereço de e-mail",
+        "source": "payment.metadata.email"
+      },
+      "brancos_2": {
+        "pos": [
+          228,
+          230
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências no retorno"
+      }
+    },
+    "segmento_c": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe"
+      },
+      "numero_registro": {
+        "pos": [
+          9,
+          13
+        ],
+        "type": "num",
+        "description": "Nº Sequencial do Registro no Lote",
+        "source": "context.seq_num"
+      },
+      "codigo_segmento": {
+        "pos": [
+          14,
+          14
+        ],
+        "type": "alfa",
+        "value": "C",
+        "description": "Código do Segmento"
+      },
+      "valor_csll": {
+        "pos": [
+          15,
+          29
+        ],
+        "type": "num",
+        "description": "Valor da Contribuição sobre o Lucro Líquido",
+        "source": "payment.metadata.valor_csll"
+      },
+      "brancos_1": {
+        "pos": [
+          30,
+          37
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "vencimento": {
+        "pos": [
+          38,
+          45
+        ],
+        "type": "num",
+        "description": "Data de vencimento (AAAAMMDD)",
+        "source": "payment.due_date_ddmmyyyy"
+      },
+      "valor_documento": {
+        "pos": [
+          46,
+          60
+        ],
+        "type": "num",
+        "description": "Valor nominal do documento",
+        "source": "payment.amount"
+      },
+      "valor_pis": {
+        "pos": [
+          61,
+          75
+        ],
+        "type": "num",
+        "description": "Valor Programa de Integração Social",
+        "source": "payment.metadata.valor_pis"
+      },
+      "valor_ir": {
+        "pos": [
+          76,
+          90
+        ],
+        "type": "num",
+        "description": "Valor do Imposto de Renda",
+        "source": "payment.metadata.valor_ir"
+      },
+      "valor_iss": {
+        "pos": [
+          91,
+          105
+        ],
+        "type": "num",
+        "description": "Valor do Imposto sobre Serviços",
+        "source": "payment.metadata.valor_iss"
+      },
+      "valor_cofins": {
+        "pos": [
+          106,
+          120
+        ],
+        "type": "num",
+        "description": "Valor Contribuição Finalidade Social",
+        "source": "payment.metadata.valor_cofins"
+      },
+      "desconto": {
+        "pos": [
+          121,
+          135
+        ],
+        "type": "num",
+        "description": "Valor do desconto",
+        "source": "payment.discount"
+      },
+      "abatimento": {
+        "pos": [
+          136,
+          150
+        ],
+        "type": "num",
+        "description": "Valor do abatimento",
+        "source": "payment.metadata.abatimento"
+      },
+      "outras_deducoes": {
+        "pos": [
+          151,
+          165
+        ],
+        "type": "num",
+        "description": "Valor de outras deduções",
+        "source": "payment.metadata.outras_deducoes"
+      },
+      "mora": {
+        "pos": [
+          166,
+          180
+        ],
+        "type": "num",
+        "description": "Valor da mora",
+        "source": "payment.metadata.mora"
+      },
+      "multa": {
+        "pos": [
+          181,
+          195
+        ],
+        "type": "num",
+        "description": "Valor da multa",
+        "source": "payment.metadata.multa"
+      },
+      "outros_acrescimos": {
+        "pos": [
+          196,
+          210
+        ],
+        "type": "num",
+        "description": "Valor de outros acréscimos",
+        "source": "payment.metadata.outros_acrescimos"
+      },
+      "fatura_documento": {
+        "pos": [
+          211,
+          230
+        ],
+        "type": "alfa",
+        "description": "Número da fatura/documento",
+        "source": "payment.metadata.fatura_documento"
+      },
+      "brancos_2": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      }
+    },
+    "trailer_lote": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "5",
+        "description": "Tipo de Registro - Trailer de lote"
+      },
+      "brancos_1": {
+        "pos": [
+          9,
+          17
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "quantidade_registros": {
+        "pos": [
+          18,
+          23
+        ],
+        "type": "num",
+        "description": "Qtde de registros do lote",
+        "source": "context.record_count"
+      },
+      "soma_valores": {
+        "pos": [
+          24,
+          41
+        ],
+        "type": "num",
+        "description": "Somatória dos valores dos pagtos",
+        "source": "context.total_amount"
+      },
+      "zeros": {
+        "pos": [
+          42,
+          59
+        ],
+        "type": "num",
+        "description": "Complemento de registro",
+        "value": "0"
+      },
+      "brancos_2": {
+        "pos": [
+          60,
+          230
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências p/ retorno"
+      }
+    },
+    "trailer_arquivo": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "value": "9999",
+        "description": "Lote de Serviço"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "9",
+        "description": "Tipo de Registro - Trailer de arquivo"
+      },
+      "brancos_1": {
+        "pos": [
+          9,
+          17
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "quantidade_lotes": {
+        "pos": [
+          18,
+          23
+        ],
+        "type": "num",
+        "value": "000001",
+        "description": "Qtde de lotes do arquivo"
+      },
+      "quantidade_registros": {
+        "pos": [
+          24,
+          29
+        ],
+        "type": "num",
+        "source": "context.total_file_records",
+        "description": "Qtde de registros do arquivo"
+      },
+      "brancos_2": {
+        "pos": [
+          30,
+          240
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      }
+    }
+  },
+  "ocorrencias": {
+    "00": "Pagamento Efetuado",
+    "BD": "Pagamento Agendado",
+    "RJ": "Registro rejeitado",
+    "CE": "Pagamento cancelado",
+    "SS": "Pagamento cancelado por insuficiência de saldo"
+  },
+  "input_validations": [
+    {
+      "source": "payment.barcode",
+      "required": true,
+      "exact_length": 44,
+      "numeric_only": true
+    },
+    {
+      "source": "payment.recipient_name",
+      "required": true,
+      "max_length": 40
+    },
+    {
+      "source": "payment.external_id",
+      "required": true,
+      "max_length": 20
+    },
+    {
+      "source": "payment.amount",
+      "required": true
+    }
+  ]
+}

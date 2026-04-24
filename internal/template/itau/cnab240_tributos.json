@@ -1,0 +1,1669 @@
+{
+  "name": "cnab240_tributos",
+  "bank_code": "341",
+  "cnab_type": "240",
+  "file_type": "REMESSA",
+  "version": "1.0",
+  "line_length": 240,
+  "detail_segments": [
+    "O"
+  ],
+  "description": "Layout CNAB 240 para pagamentos de Tributos via Itaú - SISPAG Versão 80",
+  "segments": {
+    "header_arquivo": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "value": "0000",
+        "description": "Lote de Serviço - Header de arquivo"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "0",
+        "description": "Tipo de Registro - Header de arquivo"
+      },
+      "brancos_1": {
+        "pos": [
+          9,
+          14
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "layout_arquivo": {
+        "pos": [
+          15,
+          17
+        ],
+        "type": "num",
+        "value": "080",
+        "description": "Nº da Versão do Layout do Arquivo"
+      },
+      "tipo_inscricao": {
+        "pos": [
+          18,
+          18
+        ],
+        "type": "num",
+        "description": "1=CPF, 2=CNPJ",
+        "source": "company.inscription_type"
+      },
+      "numero_inscricao": {
+        "pos": [
+          19,
+          32
+        ],
+        "type": "num",
+        "description": "CNPJ da empresa debitada",
+        "source": "company.cnpj"
+      },
+      "brancos_2": {
+        "pos": [
+          33,
+          52
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "agencia": {
+        "pos": [
+          53,
+          57
+        ],
+        "type": "num",
+        "description": "Número da Agência debitada",
+        "source": "company.agency"
+      },
+      "brancos_3": {
+        "pos": [
+          58,
+          58
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "conta": {
+        "pos": [
+          59,
+          70
+        ],
+        "type": "num",
+        "description": "Número da Conta Corrente debitada",
+        "source": "company.account"
+      },
+      "brancos_4": {
+        "pos": [
+          71,
+          71
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "dac": {
+        "pos": [
+          72,
+          72
+        ],
+        "type": "num",
+        "description": "DAC da Agência/Conta debitada",
+        "source": "company.account_digit"
+      },
+      "nome_empresa": {
+        "pos": [
+          73,
+          102
+        ],
+        "type": "alfa",
+        "description": "Nome da Empresa",
+        "source": "company.name"
+      },
+      "nome_banco": {
+        "pos": [
+          103,
+          132
+        ],
+        "type": "alfa",
+        "value": "BANCO ITAU",
+        "description": "Nome do Banco"
+      },
+      "brancos_5": {
+        "pos": [
+          133,
+          142
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "codigo_remessa": {
+        "pos": [
+          143,
+          143
+        ],
+        "type": "num",
+        "description": "1=Remessa, 2=Retorno",
+        "value": "1"
+      },
+      "data_geracao": {
+        "pos": [
+          144,
+          151
+        ],
+        "type": "num",
+        "source": "context.now_date_ddmmyyyy",
+        "description": "Data de geração do arquivo (DDMMAAAA)"
+      },
+      "hora_geracao": {
+        "pos": [
+          152,
+          157
+        ],
+        "type": "num",
+        "description": "Hora de geração (HHMMSS)",
+        "source": "context.now_time"
+      },
+      "zeros": {
+        "pos": [
+          158,
+          166
+        ],
+        "type": "num",
+        "description": "Complemento de registro",
+        "value": "0"
+      },
+      "unidade_densidade": {
+        "pos": [
+          167,
+          171
+        ],
+        "type": "num",
+        "description": "Densidade de gravação do arquivo",
+        "value": "00000"
+      },
+      "brancos_6": {
+        "pos": [
+          172,
+          240
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      }
+    },
+    "header_lote_tributos_com_codigo_barras": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "1",
+        "description": "Tipo de Registro - Header de lote"
+      },
+      "tipo_operacao": {
+        "pos": [
+          9,
+          9
+        ],
+        "type": "alfa",
+        "value": "C",
+        "description": "C=Crédito"
+      },
+      "tipo_pagamento": {
+        "pos": [
+          10,
+          11
+        ],
+        "type": "num",
+        "value": "22",
+        "description": "22=Tributos"
+      },
+      "forma_pagamento": {
+        "pos": [
+          12,
+          13
+        ],
+        "type": "num",
+        "source": "payment.payment_method",
+        "description": "13=Pagamento de Concessionárias, 16=DARF Normal, 17=GPS, 18=DARF Simples, 19=IPTU/ISS, 21=DARJ, 22=GARE-SP ICMS, 25=IPVA, 27=DPVAT, 91=GNRE e Tributos com Código de Barras"
+      },
+      "layout_lote": {
+        "pos": [
+          14,
+          16
+        ],
+        "type": "num",
+        "value": "030",
+        "description": "Nº da Versão do Layout do Lote"
+      },
+      "brancos_1": {
+        "pos": [
+          17,
+          17
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "tipo_inscricao": {
+        "pos": [
+          18,
+          18
+        ],
+        "type": "num",
+        "description": "1=CPF, 2=CNPJ",
+        "source": "company.inscription_type"
+      },
+      "numero_inscricao": {
+        "pos": [
+          19,
+          32
+        ],
+        "type": "num",
+        "description": "CNPJ da empresa debitada",
+        "source": "company.cnpj"
+      },
+      "brancos_2": {
+        "pos": [
+          33,
+          52
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "agencia": {
+        "pos": [
+          53,
+          57
+        ],
+        "type": "num",
+        "description": "Número da Agência debitada",
+        "source": "company.agency"
+      },
+      "brancos_3": {
+        "pos": [
+          58,
+          58
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "conta": {
+        "pos": [
+          59,
+          70
+        ],
+        "type": "num",
+        "description": "Número da Conta Corrente debitada",
+        "source": "company.account"
+      },
+      "brancos_4": {
+        "pos": [
+          71,
+          71
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "dac": {
+        "pos": [
+          72,
+          72
+        ],
+        "type": "num",
+        "description": "DAC da Agência/Conta",
+        "source": "company.account_digit"
+      },
+      "nome_empresa": {
+        "pos": [
+          73,
+          102
+        ],
+        "type": "alfa",
+        "description": "Nome da Empresa",
+        "source": "company.name"
+      },
+      "finalidade_lote": {
+        "pos": [
+          103,
+          132
+        ],
+        "type": "alfa",
+        "description": "Finalidade dos pagamentos do lote",
+        "value": ""
+      },
+      "historico_cc": {
+        "pos": [
+          133,
+          142
+        ],
+        "type": "alfa",
+        "description": "Complemento histórico C/C debitada",
+        "value": ""
+      },
+      "endereco_empresa": {
+        "pos": [
+          143,
+          172
+        ],
+        "type": "alfa",
+        "description": "Endereço da empresa",
+        "source": "company.address"
+      },
+      "numero": {
+        "pos": [
+          173,
+          177
+        ],
+        "type": "num",
+        "description": "Número do local",
+        "source": "company.address_number"
+      },
+      "complemento": {
+        "pos": [
+          178,
+          192
+        ],
+        "type": "alfa",
+        "description": "Complemento do endereço",
+        "source": "company.address_complement"
+      },
+      "cidade": {
+        "pos": [
+          193,
+          212
+        ],
+        "type": "alfa",
+        "description": "Nome da cidade",
+        "source": "company.city"
+      },
+      "cep": {
+        "pos": [
+          213,
+          220
+        ],
+        "type": "num",
+        "description": "CEP",
+        "source": "company.cep"
+      },
+      "estado": {
+        "pos": [
+          221,
+          222
+        ],
+        "type": "alfa",
+        "description": "Sigla do estado",
+        "source": "company.state"
+      },
+      "brancos_5": {
+        "pos": [
+          223,
+          230
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências p/ retorno"
+      }
+    },
+    "header_lote": {
+      "_description": "Alias para header_lote_tributos_com_codigo_barras - usado pelo generator",
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "1",
+        "description": "Tipo de Registro - Header de lote"
+      },
+      "tipo_operacao": {
+        "pos": [
+          9,
+          9
+        ],
+        "type": "alfa",
+        "value": "C",
+        "description": "C=Crédito"
+      },
+      "tipo_pagamento": {
+        "pos": [
+          10,
+          11
+        ],
+        "type": "num",
+        "value": "22",
+        "description": "22=Tributos"
+      },
+      "forma_pagamento": {
+        "pos": [
+          12,
+          13
+        ],
+        "type": "num",
+        "source": "payment.payment_method",
+        "description": "13=Pagamento de Concessionárias, 16=DARF Normal, 17=GPS, 18=DARF Simples, 19=IPTU/ISS, 21=DARJ, 22=GARE-SP ICMS, 25=IPVA, 27=DPVAT, 91=GNRE e Tributos com Código de Barras"
+      },
+      "layout_lote": {
+        "pos": [
+          14,
+          16
+        ],
+        "type": "num",
+        "value": "030",
+        "description": "Nº da Versão do Layout do Lote"
+      },
+      "brancos_1": {
+        "pos": [
+          17,
+          17
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "tipo_inscricao": {
+        "pos": [
+          18,
+          18
+        ],
+        "type": "num",
+        "description": "1=CPF, 2=CNPJ",
+        "source": "company.inscription_type"
+      },
+      "numero_inscricao": {
+        "pos": [
+          19,
+          32
+        ],
+        "type": "num",
+        "description": "CNPJ da empresa debitada",
+        "source": "company.cnpj"
+      },
+      "brancos_2": {
+        "pos": [
+          33,
+          52
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "agencia": {
+        "pos": [
+          53,
+          57
+        ],
+        "type": "num",
+        "description": "Número da Agência debitada",
+        "source": "company.agency"
+      },
+      "brancos_3": {
+        "pos": [
+          58,
+          58
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "conta": {
+        "pos": [
+          59,
+          70
+        ],
+        "type": "num",
+        "description": "Número da Conta Corrente debitada",
+        "source": "company.account"
+      },
+      "brancos_4": {
+        "pos": [
+          71,
+          71
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "dac": {
+        "pos": [
+          72,
+          72
+        ],
+        "type": "num",
+        "description": "DAC da Agência/Conta",
+        "source": "company.account_digit"
+      },
+      "nome_empresa": {
+        "pos": [
+          73,
+          102
+        ],
+        "type": "alfa",
+        "description": "Nome da Empresa",
+        "source": "company.name"
+      },
+      "finalidade_lote": {
+        "pos": [
+          103,
+          132
+        ],
+        "type": "alfa",
+        "description": "Finalidade dos pagamentos do lote",
+        "value": ""
+      },
+      "historico_cc": {
+        "pos": [
+          133,
+          142
+        ],
+        "type": "alfa",
+        "description": "Complemento histórico C/C debitada",
+        "value": ""
+      },
+      "endereco_empresa": {
+        "pos": [
+          143,
+          172
+        ],
+        "type": "alfa",
+        "description": "Endereço da empresa",
+        "source": "company.address"
+      },
+      "numero": {
+        "pos": [
+          173,
+          177
+        ],
+        "type": "num",
+        "description": "Número do local",
+        "source": "company.address_number"
+      },
+      "complemento": {
+        "pos": [
+          178,
+          192
+        ],
+        "type": "alfa",
+        "description": "Complemento do endereço",
+        "source": "company.address_complement"
+      },
+      "cidade": {
+        "pos": [
+          193,
+          212
+        ],
+        "type": "alfa",
+        "description": "Nome da cidade",
+        "source": "company.city"
+      },
+      "cep": {
+        "pos": [
+          213,
+          220
+        ],
+        "type": "num",
+        "description": "CEP",
+        "source": "company.cep"
+      },
+      "estado": {
+        "pos": [
+          221,
+          222
+        ],
+        "type": "alfa",
+        "description": "Sigla do estado",
+        "source": "company.state"
+      },
+      "brancos_5": {
+        "pos": [
+          223,
+          230
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências p/ retorno"
+      }
+    },
+    "header_lote_tributos_sem_codigo_barras": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "1",
+        "description": "Tipo de Registro - Header de lote"
+      },
+      "tipo_operacao": {
+        "pos": [
+          9,
+          9
+        ],
+        "type": "alfa",
+        "value": "C",
+        "description": "C=Crédito"
+      },
+      "tipo_pagamento": {
+        "pos": [
+          10,
+          11
+        ],
+        "type": "num",
+        "value": "22",
+        "description": "22=Tributos"
+      },
+      "forma_pagamento": {
+        "pos": [
+          12,
+          13
+        ],
+        "type": "num",
+        "description": "16=DARF Normal, 17=GPS, 18=DARF Simples, 19=IPTU/ISS, 21=DARJ, 22=GARE-SP ICMS, 25=IPVA, 27=DPVAT, 35=FGTS-GFIP",
+        "source": "payment.payment_method"
+      },
+      "layout_lote": {
+        "pos": [
+          14,
+          16
+        ],
+        "type": "num",
+        "value": "030",
+        "description": "Nº da Versão do Layout do Lote"
+      },
+      "brancos_1": {
+        "pos": [
+          17,
+          17
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "tipo_inscricao": {
+        "pos": [
+          18,
+          18
+        ],
+        "type": "num",
+        "description": "1=CPF, 2=CNPJ",
+        "source": "company.inscription_type"
+      },
+      "numero_inscricao": {
+        "pos": [
+          19,
+          32
+        ],
+        "type": "num",
+        "description": "CNPJ da empresa debitada",
+        "source": "company.cnpj"
+      },
+      "brancos_2": {
+        "pos": [
+          33,
+          52
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "agencia": {
+        "pos": [
+          53,
+          57
+        ],
+        "type": "num",
+        "description": "Número da Agência debitada",
+        "source": "company.agency"
+      },
+      "brancos_3": {
+        "pos": [
+          58,
+          58
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "conta": {
+        "pos": [
+          59,
+          70
+        ],
+        "type": "num",
+        "description": "Número da Conta Corrente debitada",
+        "source": "company.account"
+      },
+      "brancos_4": {
+        "pos": [
+          71,
+          71
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "dac": {
+        "pos": [
+          72,
+          72
+        ],
+        "type": "num",
+        "description": "DAC da Agência/Conta",
+        "source": "company.account_digit"
+      },
+      "nome_empresa": {
+        "pos": [
+          73,
+          102
+        ],
+        "type": "alfa",
+        "description": "Nome da Empresa",
+        "source": "company.name"
+      },
+      "finalidade_lote": {
+        "pos": [
+          103,
+          132
+        ],
+        "type": "alfa",
+        "description": "Finalidade dos pagamentos do lote",
+        "value": ""
+      },
+      "historico_cc": {
+        "pos": [
+          133,
+          142
+        ],
+        "type": "alfa",
+        "description": "Complemento histórico C/C debitada",
+        "value": ""
+      },
+      "endereco_empresa": {
+        "pos": [
+          143,
+          172
+        ],
+        "type": "alfa",
+        "description": "Endereço da empresa",
+        "source": "company.address"
+      },
+      "numero": {
+        "pos": [
+          173,
+          177
+        ],
+        "type": "num",
+        "description": "Número do local",
+        "source": "company.address_number"
+      },
+      "complemento": {
+        "pos": [
+          178,
+          192
+        ],
+        "type": "alfa",
+        "description": "Complemento do endereço",
+        "source": "company.address_complement"
+      },
+      "cidade": {
+        "pos": [
+          193,
+          212
+        ],
+        "type": "alfa",
+        "description": "Nome da cidade",
+        "source": "company.city"
+      },
+      "cep": {
+        "pos": [
+          213,
+          220
+        ],
+        "type": "num",
+        "description": "CEP",
+        "source": "company.cep"
+      },
+      "estado": {
+        "pos": [
+          221,
+          222
+        ],
+        "type": "alfa",
+        "description": "Sigla do estado",
+        "source": "company.state"
+      },
+      "brancos_5": {
+        "pos": [
+          223,
+          230
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências p/ retorno"
+      }
+    },
+    "segmento_o": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe"
+      },
+      "numero_registro": {
+        "pos": [
+          9,
+          13
+        ],
+        "type": "num",
+        "description": "Nº Sequencial do Registro no Lote",
+        "source": "context.seq_num"
+      },
+      "segmento": {
+        "pos": [
+          14,
+          14
+        ],
+        "type": "alfa",
+        "value": "O",
+        "description": "Código do Segmento - Obrigatório para tributos com código de barras"
+      },
+      "tipo_movimento": {
+        "pos": [
+          15,
+          17
+        ],
+        "type": "num",
+        "value": "000",
+        "description": "000=Inclusão, 999=Exclusão"
+      },
+      "codigo_barras": {
+        "pos": [
+          18,
+          65
+        ],
+        "type": "alfa",
+        "source": "payment.barcode",
+        "description": "Código de Barras (48 posições - layout SISPAG Itaú)"
+      },
+      "nome_concessionaria": {
+        "pos": [
+          66,
+          95
+        ],
+        "type": "alfa",
+        "source": "payment.recipient_name",
+        "description": "Nome da Concessionária/Contribuinte"
+      },
+      "data_vencimento": {
+        "pos": [
+          96,
+          103
+        ],
+        "type": "num",
+        "source": "payment.due_date_ddmmyyyy",
+        "description": "Data do Vencimento Nominal (DDMMAAAA)"
+      },
+      "moeda": {
+        "pos": [
+          104,
+          106
+        ],
+        "type": "alfa",
+        "value": "REA",
+        "description": "Tipo de Moeda (REA=Real)"
+      },
+      "quantidade_moeda": {
+        "pos": [
+          107,
+          121
+        ],
+        "type": "num",
+        "description": "Quantidade de Moeda",
+        "source": "payment.metadata.quantidade_moeda"
+      },
+      "valor_a_pagar": {
+        "pos": [
+          122,
+          136
+        ],
+        "type": "num",
+        "source": "payment.amount",
+        "description": "Valor previsto do pagamento (com 2 decimais)"
+      },
+      "data_pagamento": {
+        "pos": [
+          137,
+          144
+        ],
+        "type": "num",
+        "source": "context.now_date_ddmmyyyy",
+        "description": "Data do Pagamento (DDMMAAAA)"
+      },
+      "valor_pago": {
+        "pos": [
+          145,
+          159
+        ],
+        "type": "num",
+        "description": "Valor de Efetivação do Pagamento (retorno)",
+        "value": "0"
+      },
+      "brancos_1": {
+        "pos": [
+          160,
+          162
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "nota_fiscal": {
+        "pos": [
+          163,
+          171
+        ],
+        "type": "num",
+        "description": "Número da Nota Fiscal",
+        "source": "payment.metadata.nota_fiscal"
+      },
+      "brancos_2": {
+        "pos": [
+          172,
+          174
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "seu_numero": {
+        "pos": [
+          175,
+          194
+        ],
+        "type": "alfa",
+        "description": "Nº do documento atribuído pela empresa - NOTA 43",
+        "source": "payment.external_id"
+      },
+      "brancos_3": {
+        "pos": [
+          195,
+          215
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "nosso_numero": {
+        "pos": [
+          216,
+          230
+        ],
+        "type": "alfa",
+        "description": "Nº atribuído pelo Banco (retorno)",
+        "source": "payment.our_number"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências no retorno"
+      }
+    },
+    "segmento_n": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe"
+      },
+      "numero_registro": {
+        "pos": [
+          9,
+          13
+        ],
+        "type": "num",
+        "description": "Nº Sequencial do Registro no Lote",
+        "source": "context.seq_num"
+      },
+      "segmento": {
+        "pos": [
+          14,
+          14
+        ],
+        "type": "alfa",
+        "value": "N",
+        "description": "Código do Segmento - Obrigatório para tributos sem código de barras"
+      },
+      "tipo_movimento": {
+        "pos": [
+          15,
+          17
+        ],
+        "type": "num",
+        "value": "000",
+        "description": "000=Inclusão, 999=Exclusão"
+      },
+      "dados_tributo": {
+        "pos": [
+          18,
+          195
+        ],
+        "type": "alfa",
+        "description": "Dados de Identificação do Tributo (178 posições). Campos variam conforme tipo: GPS, DARF, DARF Simples, GARE-SP (ver documentação SISPAG)",
+        "source": "payment.metadata.dados_tributo"
+      },
+      "seu_numero": {
+        "pos": [
+          196,
+          215
+        ],
+        "type": "alfa",
+        "description": "Nº do documento atribuído pela empresa - NOTA 43",
+        "source": "payment.external_id"
+      },
+      "nosso_numero": {
+        "pos": [
+          216,
+          230
+        ],
+        "type": "alfa",
+        "description": "Nº atribuído pelo Banco (retorno)",
+        "source": "payment.our_number"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências no retorno"
+      }
+    },
+    "segmento_b": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe"
+      },
+      "numero_registro": {
+        "pos": [
+          9,
+          13
+        ],
+        "type": "num",
+        "description": "Nº Sequencial do Registro no Lote",
+        "source": "context.seq_num"
+      },
+      "codigo_segmento": {
+        "pos": [
+          14,
+          14
+        ],
+        "type": "alfa",
+        "value": "B",
+        "description": "Código do Segmento - Opcional"
+      },
+      "brancos_1": {
+        "pos": [
+          15,
+          32
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "endereco": {
+        "pos": [
+          33,
+          62
+        ],
+        "type": "alfa",
+        "description": "Logradouro",
+        "source": "payment.metadata.endereco"
+      },
+      "numero": {
+        "pos": [
+          63,
+          67
+        ],
+        "type": "num",
+        "description": "Número do local",
+        "source": "payment.metadata.numero"
+      },
+      "complemento": {
+        "pos": [
+          68,
+          82
+        ],
+        "type": "alfa",
+        "description": "Complemento",
+        "source": "payment.metadata.complemento"
+      },
+      "bairro": {
+        "pos": [
+          83,
+          97
+        ],
+        "type": "alfa",
+        "description": "Bairro",
+        "source": "payment.metadata.bairro"
+      },
+      "cidade": {
+        "pos": [
+          98,
+          117
+        ],
+        "type": "alfa",
+        "description": "Cidade",
+        "source": "payment.metadata.cidade"
+      },
+      "cep": {
+        "pos": [
+          118,
+          125
+        ],
+        "type": "num",
+        "description": "CEP",
+        "source": "payment.metadata.cep"
+      },
+      "estado": {
+        "pos": [
+          126,
+          127
+        ],
+        "type": "alfa",
+        "description": "UF",
+        "source": "payment.metadata.estado"
+      },
+      "telefone": {
+        "pos": [
+          128,
+          138
+        ],
+        "type": "num",
+        "description": "DDD e Número do Telefone (GARE-SP ICMS)",
+        "source": "payment.metadata.telefone"
+      },
+      "acrescimos": {
+        "pos": [
+          139,
+          152
+        ],
+        "type": "num",
+        "description": "Valor do Acréscimo (GARE-SP ICMS)",
+        "source": "payment.interest"
+      },
+      "honorarios": {
+        "pos": [
+          153,
+          166
+        ],
+        "type": "num",
+        "description": "Valor do Honorário (GARE-SP ICMS)",
+        "source": "payment.metadata.honorarios"
+      },
+      "brancos_2": {
+        "pos": [
+          167,
+          230
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências no retorno"
+      }
+    },
+    "segmento_w": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe"
+      },
+      "numero_registro": {
+        "pos": [
+          9,
+          13
+        ],
+        "type": "num",
+        "description": "Nº Sequencial do Registro no Lote",
+        "source": "context.seq_num"
+      },
+      "codigo_segmento": {
+        "pos": [
+          14,
+          14
+        ],
+        "type": "alfa",
+        "value": "W",
+        "description": "Código do Segmento - Opcional (GARE-SP ICMS)"
+      },
+      "brancos_1": {
+        "pos": [
+          15,
+          16
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "informacao_1": {
+        "pos": [
+          17,
+          56
+        ],
+        "type": "alfa",
+        "description": "Informação Complementar 1",
+        "source": "payment.metadata.informacao_1"
+      },
+      "informacao_2": {
+        "pos": [
+          57,
+          96
+        ],
+        "type": "alfa",
+        "description": "Informação Complementar 2",
+        "source": "payment.metadata.informacao_2"
+      },
+      "informacao_3": {
+        "pos": [
+          97,
+          136
+        ],
+        "type": "alfa",
+        "description": "Informação Complementar 3",
+        "source": "payment.metadata.informacao_3"
+      },
+      "informacao_4": {
+        "pos": [
+          137,
+          176
+        ],
+        "type": "alfa",
+        "description": "Informação Complementar 4",
+        "source": "payment.metadata.informacao_4"
+      },
+      "brancos_2": {
+        "pos": [
+          177,
+          240
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      }
+    },
+    "trailer_lote": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "5",
+        "description": "Tipo de Registro - Trailer de lote"
+      },
+      "brancos_1": {
+        "pos": [
+          9,
+          17
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "quantidade_registros": {
+        "pos": [
+          18,
+          23
+        ],
+        "type": "num",
+        "description": "Qtde de registros do lote",
+        "source": "context.record_count"
+      },
+      "total_valor_principal": {
+        "pos": [
+          24,
+          37
+        ],
+        "type": "num",
+        "description": "Soma valor principal dos pagtos do lote",
+        "source": "context.total_valor_principal"
+      },
+      "total_outras_entidades": {
+        "pos": [
+          38,
+          51
+        ],
+        "type": "num",
+        "description": "Soma valores de outras entidades",
+        "source": "context.total_outras_entidades"
+      },
+      "total_val_acrescimos": {
+        "pos": [
+          52,
+          65
+        ],
+        "type": "num",
+        "description": "Soma valores atualiz./multa/mora",
+        "source": "context.total_val_acrescimos"
+      },
+      "total_valor_arrecadado": {
+        "pos": [
+          66,
+          79
+        ],
+        "type": "num",
+        "description": "Soma valor dos pagamentos do lote",
+        "source": "context.total_amount"
+      },
+      "brancos_2": {
+        "pos": [
+          80,
+          230
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências p/ retorno"
+      }
+    },
+    "trailer_arquivo": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "value": "9999",
+        "description": "Lote de Serviço"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "9",
+        "description": "Tipo de Registro - Trailer de arquivo"
+      },
+      "brancos_1": {
+        "pos": [
+          9,
+          17
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "quantidade_lotes": {
+        "pos": [
+          18,
+          23
+        ],
+        "type": "num",
+        "value": "000001",
+        "description": "Qtde de lotes do arquivo"
+      },
+      "quantidade_registros": {
+        "pos": [
+          24,
+          29
+        ],
+        "type": "num",
+        "source": "context.total_file_records",
+        "description": "Qtde de registros do arquivo"
+      },
+      "brancos_2": {
+        "pos": [
+          30,
+          240
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      }
+    }
+  },
+  "ocorrencias": {
+    "00": "Pagamento Efetuado",
+    "BD": "Pagamento Agendado",
+    "RJ": "Registro rejeitado",
+    "CE": "Pagamento cancelado",
+    "SS": "Pagamento cancelado por insuficiência de saldo"
+  },
+  "notes": {
+    "segmento_n": "Segmento N é obrigatório para pagamentos de tributos SEM código de barras (FGTS, DARF, GPS, etc.)",
+    "segmento_n_campos": "O campo 'dados_tributo' (pos 18-195) varia conforme o tipo de tributo. Não são sub-segmentos - são campos específicos dentro do Segmento N",
+    "segmento_n_gps": "Guia da Previdência Social - usar quando forma_pagamento = 17",
+    "segmento_n_darf": "DARF Normal - usar quando forma_pagamento = 16",
+    "segmento_n_darf_simples": "DARF Simples - usar quando forma_pagamento = 18",
+    "segmento_n_gare": "GARE-SP ICMS - usar quando forma_pagamento = 22 (complementar com Segmento W e campos específicos do Segmento B)",
+    "segmento_o": "Obrigatório para tributos COM código de barras - código de barras com 44 posições (padrão FEBRABAN)",
+    "segmento_b_tributos": "Opcional - quando necessário indicar informações complementares na guia (DARJ, GPS, GARE-SP ICMS)",
+    "segmento_w": "Opcional - específico para GARE-SP ICMS (informações complementares para o comprovante)",
+    "trailer_lote_tributos": "Possui campos extras comparado ao trailer de transferências: total_valor_principal, total_outras_entidades, total_val_acrescimos, total_valor_arrecadado"
+  },
+  "input_validations": [
+    {
+      "source": "payment.barcode",
+      "exact_length": 48,
+      "numeric_only": true
+    },
+    {
+      "source": "payment.tax_type",
+      "required": true
+    },
+    {
+      "source": "payment.recipient_name",
+      "required": true,
+      "max_length": 30
+    },
+    {
+      "source": "payment.external_id",
+      "required": true,
+      "max_length": 20
+    },
+    {
+      "source": "payment.amount",
+      "required": true
+    }
+  ]
+}
