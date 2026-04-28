@@ -410,76 +410,43 @@
         "type": "alfa",
         "value": "Z"
       },
-      "tipo_autenticacao": {
-        "pos": [
-          15,
-          18
-        ],
-        "type": "num",
-        "description": "Tipo de autenticação"
-      },
       "autenticacao": {
         "pos": [
-          19,
+          15,
           78
         ],
         "type": "alfa",
-        "description": "Autenticação do pagamento PIX (retorno)"
+        "description": "Autenticação Eletrônica do Pagamento (retorno)"
       },
-      "end_to_end_id": {
+      "seu_numero": {
         "pos": [
           79,
-          110
+          98
         ],
         "type": "alfa",
-        "description": "Identificador end-to-end PIX (32 caracteres)"
+        "description": "Nº docto atribuído pela empresa"
       },
-      "data_hora_pagamento": {
+      "brancos_1": {
         "pos": [
-          111,
-          130
-        ],
-        "type": "num",
-        "description": "Data e hora do pagamento (AAAAMMDDHHMMSS)"
-      },
-      "valor_pago": {
-        "pos": [
-          131,
-          145
-        ],
-        "type": "num",
-        "description": "Valor pago efetivamente (2 decimais)"
-      },
-      "status_pagamento": {
-        "pos": [
-          146,
-          147
-        ],
-        "type": "num",
-        "description": "00=Realizado, 01=Pendente, 02=Cancelado"
-      },
-      "codigo_erro": {
-        "pos": [
-          148,
-          157
-        ],
-        "type": "alfa",
-        "description": "Código do erro (se houver)"
-      },
-      "cnab": {
-        "pos": [
-          158,
-          230
+          99,
+          103
         ],
         "type": "alfa"
       },
-      "ocorrencias": {
+      "nosso_numero": {
         "pos": [
-          231,
-          240
+          104,
+          118
         ],
         "type": "alfa",
-        "description": "Código de ocorrências"
+        "description": "Nº docto atribuído pelo banco"
+      },
+      "brancos_2": {
+        "pos": [
+          119,
+          240
+        ],
+        "type": "alfa"
       }
     },
     "trailer_lote": {
