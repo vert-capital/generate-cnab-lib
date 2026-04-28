@@ -586,8 +586,8 @@
           114
         ],
         "type": "num",
-        "value": "01",
-        "description": "01=Conta Corrente, 02=Conta Poupança"
+        "source": "payment.tipo_conta",
+        "description": "01=Conta Corrente, 02=Conta Poupança, 04=Chave de endereçamento (PIX via chave)"
       },
       "zeros_2": {
         "pos": [

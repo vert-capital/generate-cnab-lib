@@ -7,19 +7,15 @@ import (
 )
 
 // FormatValue formata um valor de acordo com o tipo e tamanho.
-// Para tipo numérico, verifica se o valor cabe no tamanho antes de formatar.
-// Se o valor alfanumérico for maior que o tamanho, ele será truncado.
-func FormatValue(value string, length int, fieldType string) string {
-	if fieldType == "num" {
-		if len(value) > length {
-			value = value[:length]
-		}
-		return fmt.Sprintf("%0*s", length, value)
-	}
+// Retorna erro se o valor exceder o tamanho do campo, evitando truncamento silencioso.
+func FormatValue(value string, length int, fieldType string) (string, error) {
 	if len(value) > length {
-		value = value[:length]
+		return "", fmt.Errorf("valor '%s' (%d caracteres) excede o tamanho do campo (%d)", value, len(value), length)
 	}
-	return fmt.Sprintf("%-*s", length, value)
+	if fieldType == "num" {
+		return fmt.Sprintf("%0*s", length, value), nil
+	}
+	return fmt.Sprintf("%-*s", length, value), nil
 }
 
 // FormatCurrency formata valor monetário para CNAB (2 decimais, sem ponto).

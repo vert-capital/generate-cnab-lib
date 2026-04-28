@@ -8,11 +8,12 @@ import (
 
 func TestFormatValue(t *testing.T) {
 	tests := []struct {
-		name     string
-		value    string
-		length   int
-		dataType string
-		expected string
+		name        string
+		value       string
+		length      int
+		dataType    string
+		expected    string
+		expectError bool
 	}{
 		{
 			name:     "numeric with zeros left",
@@ -22,11 +23,11 @@ func TestFormatValue(t *testing.T) {
 			expected: "00123",
 		},
 		{
-			name:     "numeric truncation",
-			value:    "123456",
-			length:   5,
-			dataType: "num",
-			expected: "12345",
+			name:        "numeric exceeds length",
+			value:       "123456",
+			length:      5,
+			dataType:    "num",
+			expectError: true,
 		},
 		{
 			name:     "alpha with spaces right",
@@ -36,11 +37,11 @@ func TestFormatValue(t *testing.T) {
 			expected: "ABC   ",
 		},
 		{
-			name:     "alpha truncation",
-			value:    "ABCDEFGHI",
-			length:   5,
-			dataType: "alfa",
-			expected: "ABCDE",
+			name:        "alpha exceeds length",
+			value:       "ABCDEFGHI",
+			length:      5,
+			dataType:    "alfa",
+			expectError: true,
 		},
 		{
 			name:     "empty numeric",
@@ -60,7 +61,12 @@ func TestFormatValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := FormatValue(tt.value, tt.length, tt.dataType)
+			result, err := FormatValue(tt.value, tt.length, tt.dataType)
+			if tt.expectError {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

@@ -189,7 +189,10 @@ func generateSegment(
 			if start < 1 || end > len(line) || start > end {
 				return "", fmt.Errorf("posição inválida [%d, %d] para campo '%s' no segmento '%s'", start, end, f.Name, segmentKey)
 			}
-			formatted := formatter.FormatValue(value, end-start+1, f.Config.Type)
+			formatted, err := formatter.FormatValue(value, end-start+1, f.Config.Type)
+			if err != nil {
+				return "", fmt.Errorf("campo '%s' no segmento '%s': %w", f.Name, segmentKey, err)
+			}
 			copy(line[start-1:end], formatted)
 		}
 	}

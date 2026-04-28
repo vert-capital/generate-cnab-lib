@@ -61,6 +61,7 @@ func (r *Resolver) registerPaymentResolvers() {
 	})
 	r.resolvers["payment.tipo_conta"] = func(ctx *Context, format string) string {
 		if ctx.CurrentPayment != nil {
+			// Se informado explicitamente, usa o valor fornecido
 			if ctx.CurrentPayment.AccountType != "" {
 				return ctx.CurrentPayment.AccountType
 			}
@@ -68,6 +69,10 @@ func (r *Resolver) registerPaymentResolvers() {
 				if val, ok := ctx.CurrentPayment.Metadata["account_type"]; ok {
 					return interfaceToString(val)
 				}
+			}
+			// PIX via chave de enderecamento deve usar 04 (Nota 36 Itaú)
+			if ctx.CurrentPayment.RecipientPixKey != "" {
+				return "04"
 			}
 		}
 		return "01"
@@ -161,6 +166,9 @@ func (r *Resolver) registerPaymentResolvers() {
 		}
 		return "2"
 	}
+	r.resolvers["payment.recipient_pix_key"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.RecipientPixKey
+	})
 	r.resolvers["payment.due_date_ddmmyyyy"] = func(ctx *Context, format string) string {
 		if ctx.CurrentPayment != nil {
 			dueDate := ctx.CurrentPayment.DueDate
@@ -189,12 +197,28 @@ func (r *Resolver) registerPaymentResolvers() {
 		if ctx.CurrentPayment == nil {
 			return ""
 		}
+		var raw string
 		if ctx.CurrentPayment.Metadata != nil {
 			if val, ok := ctx.CurrentPayment.Metadata["key_type"]; ok {
-				return interfaceToString(val)
+				raw = interfaceToString(val)
 			}
 		}
-		return ""
+		// Converte códigos do README para códigos oficiais do Itaú (Nota 37)
+		// README: 01=Telefone, 02=Email, 03=CPF/CNPJ, 04=Celular, 05=Chave Aleatória
+		// Itaú:   01=Telefone, 02=Email, 03=CPF/CNPJ, 04=Chave Aleatória
+		switch raw {
+		case "05":
+			return "04" // Chave Aleatória (EVP)
+		case "04":
+			return "01" // Celular → Telefone
+		case "01", "02", "03":
+			return raw
+		}
+		// Inferência: se a chave for um UUID (EVP), assume 04
+		if ctx.CurrentPayment.RecipientPixKey != "" && strings.Contains(ctx.CurrentPayment.RecipientPixKey, "-") {
+			return "04"
+		}
+		return raw
 	}
 	r.resolvers["payment.tax_type"] = paymentResolver(func(p *types.PaymentData) string {
 		return p.TaxType

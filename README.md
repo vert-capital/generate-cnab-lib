@@ -18,16 +18,22 @@ go get github.com/vert-capital/generate-cnab-lib
 
 | Template                | Descrição                         | Tipo Pagamento    | Forma Pagamento            |
 | ----------------------- | --------------------------------- | ----------------- | -------------------------- |
-| `cnab240_pix_conta`     | PIX via Conta (Transferência SPI) | 98 (Diversos)     | 45                         |
+| `cnab240_pix_conta`     | PIX via Conta ou Chave Pix        | 98 (Diversos)     | 45                         |
 | `cnab240_transferencia` | TED/DOC para outros bancos        | 20 (Fornecedores) | 01, 03, 07, 41, 43         |
 | `cnab240_boleto`        | Pagamento de Boletos (Segmento J) | 30 (Títulos)      | 30=Itaú / 31=Outros Bancos |
 | `cnab240_tributos`      | Tributos (Segmento O ou N)        | 22 (Tributos)     | conforme tipo              |
 
 ## Uso
 
-### 1. PIX via Conta (`cnab240_pix_conta`)
+### 1. PIX (`cnab240_pix_conta`)
 
-Transferência PIX para conta corrente/poupança (não utiliza chave PIX).
+O template suporta dois modos de envio PIX. Pelo menos um dos dois modos deve ser informado por pagamento:
+- **PIX via Conta** (dados bancários): `recipient_agency` + `recipient_account`
+- **PIX via Chave**: `recipient_pix_key` + `metadata.key_type`
+
+#### 1.1 PIX via Conta
+
+Transferência PIX para conta corrente/poupança utilizando dados bancários.
 
 ```json
 {
@@ -58,7 +64,6 @@ Transferência PIX para conta corrente/poupança (não utiliza chave PIX).
       "recipient_agency_digit": "9",
       "recipient_account": "12345",
       "recipient_account_digit": "1",
-      "recipient_pix_key": "fornecedor@email.com",
       "ispb": "60701190",
       "amount": 500.75,
       "due_date": "20260410"
@@ -67,14 +72,67 @@ Transferência PIX para conta corrente/poupança (não utiliza chave PIX).
 }
 ```
 
+#### 1.2 PIX via Chave
+
+Transferência PIX utilizando chave PIX (CPF, CNPJ, Email, Celular ou Chave Aleatória).
+
+```json
+{
+  "external_id": "PIX-CHAVE-001",
+  "origin_id": 1,
+  "bank_code": "341",
+  "template_name": "cnab240_pix_conta",
+  "company": {
+    "cnpj": "12345678000195",
+    "company_name": "EMPRESA LTDA",
+    "bank_code": "341",
+    "agency": "1234",
+    "account": "123456",
+    "account_digit": "0"
+  },
+  "payments": [
+    {
+      "external_id": "PAY-001",
+      "recipient_document": "98765432000196",
+      "recipient_company_name": "FORNECEDOR PIX",
+      "recipient_bank": "341",
+      "ispb": "60701190",
+      "amount": 500.75,
+      "due_date": "20260410",
+      "recipient_pix_key": "123e4567-e89b-12d3-a456-426614174000",
+      "metadata": {
+        "key_type": "04"
+      }
+    }
+  ]
+}
+```
+
+**Mapeamento de `key_type` (código Itaú - Nota 37):**
+
+| Tipo | Código |
+|------|--------|
+| Telefone | `01` |
+| E-mail | `02` |
+| CPF/CNPJ | `03` |
+| Chave Aleatória (EVP) | `04` |
+
+> Ao enviar `recipient_pix_key`, o campo `metadata.key_type` é obrigatório. Os campos `recipient_agency` e `recipient_account` podem ser omitidos.
+>
+> **Retrocompatibilidade:** A biblioteca também aceita os códigos `01` a `05` do padrão anterior (BACEN) e converte internamente para o padrão Itaú:
+> - `05` (Chave Aleatória BACEN) → `04` (Itaú)
+> - `04` (Celular BACEN) → `01` (Telefone Itaú)
+
 **Campos específicos:**
 
 | Campo                     | Obrigatório | Descrição                                   |
 | ------------------------- | ----------- | ------------------------------------------- |
 | `recipient_bank`          | Sim         | Código do banco do favorecido               |
-| `recipient_agency`        | Sim         | Agência do favorecido                       |
-| `recipient_account`       | Sim         | Conta do favorecido                         |
-| `recipient_account_digit` | Sim         | Dígito da conta                             |
+| `recipient_agency`        | Condicional | Agência do favorecido (obrigatório para PIX via conta) |
+| `recipient_account`       | Condicional | Conta do favorecido (obrigatório para PIX via conta)   |
+| `recipient_account_digit` | Condicional | Dígito da conta (obrigatório para PIX via conta)       |
+| `recipient_pix_key`       | Condicional | Chave PIX do favorecido (obrigatório para PIX via chave) |
+| `metadata.key_type`       | Condicional | Tipo da chave PIX conforme tabela Itaú Nota 37 (obrigatório para PIX via chave) |
 | `ispb`                    | Sim         | ISPB do banco destino (ex: 60701190 = Itaú) |
 
 > **NOTA 44:** Para PIX conta pagamento, o campo agência (posição 225-229 do Segmento A) é preenchido automaticamente a partir de `company.agency`.
@@ -464,6 +522,41 @@ input := cnab.Input{
 result, err := cnab.Generate(context.Background(), input, "cnab240_pix_conta")
 ```
 
+**Exemplo com PIX via Chave:**
+
+```go
+inputPixKey := cnab.Input{
+    ExternalID: "PIX-CHAVE-001",
+    BankCode:   "341",
+    Company: cnab.CompanyData{
+        CNPJ:         "12345678000195",
+        CompanyName:  "EMPRESA LTDA",
+        BankCode:     "341",
+        Agency:       "1234",
+        Account:      "123456",
+        AccountDigit: "5",
+    },
+    Payments: []cnab.PaymentData{
+        {
+            ExternalID:           "PAY-001",
+            TemplateName:         "cnab240_pix_conta",
+            RecipientDocument:    "12345678901",
+            RecipientCompanyName: "JOSE DA SILVA",
+            RecipientBank:        "341",
+            RecipientPixKey:      "123e4567-e89b-12d3-a456-426614174000",
+            ISPB:                 "60701190",
+            Amount:               500.75,
+            DueDate:              "20260410",
+            Metadata: map[string]interface{}{
+                "key_type": "05",
+            },
+        },
+    },
+}
+
+result, err := cnab.Generate(context.Background(), inputPixKey, "cnab240_pix_conta")
+```
+
 ---
 
 ## Parse de Arquivo de Retorno
@@ -764,7 +857,10 @@ os.WriteFile("retorno.json", jsonBytes, 0644)
 - Código de compensação do banco favorecido deve ser informado
 - ISPB é obrigatório para identificação da instituição
 - CPF/CNPJ do favorecido é validado
-- **NOTA 44:** Agência é preenchida automaticamente na posição 225-229 do Segmento A (obrigatório para PIX)
+- Pelo menos um dos dois modos deve ser informado por pagamento:
+  - **PIX via Conta:** `recipient_agency` + `recipient_account`
+  - **PIX via Chave:** `recipient_pix_key` + `metadata.key_type`
+- **NOTA 44:** Agência é preenchida automaticamente na posição 225-229 do Segmento A (obrigatório para PIX via conta)
 - **NOTA 46:** Campo `external_id` (Seu Número) é obrigatório
 - **NOTA 8:** Cancelamento de PIX não gera arquivo retorno; PIX agendado só pode ser cancelado via Itaú na Internet
 
