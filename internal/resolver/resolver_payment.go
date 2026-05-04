@@ -203,22 +203,7 @@ func (r *Resolver) registerPaymentResolvers() {
 				raw = interfaceToString(val)
 			}
 		}
-		// Converte códigos do README para códigos oficiais do Itaú (Nota 37)
-		// README: 01=Telefone, 02=Email, 03=CPF/CNPJ, 04=Celular, 05=Chave Aleatória
-		// Itaú:   01=Telefone, 02=Email, 03=CPF/CNPJ, 04=Chave Aleatória
-		switch raw {
-		case "05":
-			return "04" // Chave Aleatória (EVP)
-		case "04":
-			return "01" // Celular → Telefone
-		case "01", "02", "03":
-			return raw
-		}
-		// Inferência: se a chave for um UUID (EVP), assume 04
-		if ctx.CurrentPayment.RecipientPixKey != "" && strings.Contains(ctx.CurrentPayment.RecipientPixKey, "-") {
-			return "04"
-		}
-		return raw
+		return resolvePixKeyType(raw, ctx.CurrentPayment.RecipientPixKey)
 	}
 	r.resolvers["payment.tax_type"] = paymentResolver(func(p *types.PaymentData) string {
 		return p.TaxType
@@ -248,6 +233,49 @@ func (r *Resolver) registerPaymentResolvers() {
 		}
 		return ""
 	}
+}
+
+// resolvePixKeyType converte o tipo de chave PIX informado pelo cliente
+// para o código oficial do Itaú (Nota 37). Aceita tanto códigos numéricos
+// quanto nomes textuais (case-insensitive) para melhor UX da API.
+//
+// Mapeamento Itaú: 01=Telefone, 02=Email, 03=CPF/CNPJ, 04=Chave Aleatória
+func resolvePixKeyType(raw, pixKey string) string {
+	normalized := strings.ToUpper(strings.TrimSpace(raw))
+
+	// 1. Nomes textuais → código Itaú (prioridade máxima, nunca ambíguos)
+	switch normalized {
+	case "TELEFONE", "PHONE":
+		return "01"
+	case "EMAIL", "E-MAIL":
+		return "02"
+	case "CPF", "CNPJ":
+		return "03"
+	case "CHAVE_ALEATORIA", "CHAVE ALEATÓRIA", "CHAVE ALEATORIA", "EVP":
+		return "04"
+	}
+
+	// 2. Códigos legados do README (backwards compatibility)
+	// README antigo: 04=Celular, 05=Chave Aleatória
+	switch normalized {
+	case "04":
+		return "01" // Celular → Telefone
+	case "05":
+		return "04" // Chave Aleatória (EVP)
+	}
+
+	// 3. Códigos diretos do Itaú (01–04) passam adiante
+	switch normalized {
+	case "01", "02", "03", "04":
+		return normalized
+	}
+
+	// 4. Inferência por padrão da chave: se for um UUID (EVP), assume 04
+	if pixKey != "" && strings.Contains(pixKey, "-") {
+		return "04"
+	}
+
+	return raw
 }
 
 func formatNum(v float64, length int) string {

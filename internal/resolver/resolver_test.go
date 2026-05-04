@@ -595,6 +595,71 @@ func TestTaxTypeToPaymentCode(t *testing.T) {
 	}
 }
 
+func TestResolvePixKeyType(t *testing.T) {
+	r := New()
+
+	tests := []struct {
+		name     string
+		keyType  string
+		pixKey   string
+		expected string
+	}{
+		// Nomes textuais (case-insensitive)
+		{"EMAIL uppercase", "EMAIL", "test@example.com", "02"},
+		{"email lowercase", "email", "test@example.com", "02"},
+		{"E-MAIL with hyphen", "E-MAIL", "test@example.com", "02"},
+		{"TELEFONE", "TELEFONE", "+5511999999999", "01"},
+		{"PHONE", "PHONE", "+5511999999999", "01"},
+		{"CPF", "CPF", "12345678901", "03"},
+		{"CNPJ", "CNPJ", "12345678000195", "03"},
+		{"CHAVE_ALEATORIA", "CHAVE_ALEATORIA", "abc123", "04"},
+		{"CHAVE ALEATORIA", "CHAVE ALEATORIA", "abc123", "04"},
+		{"CHAVE ALEATÓRIA", "CHAVE ALEATÓRIA", "abc123", "04"},
+		{"EVP", "EVP", "abc123", "04"},
+
+		// Códigos numéricos diretos (Itaú)
+		{"code 01 Telefone", "01", "+5511999999999", "01"},
+		{"code 02 Email", "02", "test@example.com", "02"},
+		{"code 03 CPF/CNPJ", "03", "12345678901", "03"},
+		{"code 04 legado Celular→Telefone", "04", "+5511999999999", "01"},
+
+		// Backwards compatibility (códigos README antigos)
+		{"legacy 04 Celular→Telefone", "04", "+5511999999999", "01"},
+		{"legacy 05 EVP→04", "05", "abc123", "04"},
+
+		// Inferência por UUID
+		{"infer UUID", "", "abc12345-1234-1234-1234-123456789abc", "04"},
+
+		// Vazio
+		{"empty", "", "", ""},
+		{"nil metadata", "", "test@example.com", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			payment := &types.PaymentData{
+				RecipientPixKey: tt.pixKey,
+			}
+			if tt.keyType != "" || tt.name == "empty" {
+				payment.Metadata = map[string]interface{}{
+					"key_type": tt.keyType,
+				}
+			}
+			ctx := &Context{CurrentPayment: payment}
+			result, err := r.Resolve("payment.pix_key_type", ctx, "")
+			require.NoError(t, err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+
+	t.Run("nil payment", func(t *testing.T) {
+		ctx := &Context{}
+		result, err := r.Resolve("payment.pix_key_type", ctx, "")
+		require.NoError(t, err)
+		assert.Equal(t, "", result)
+	})
+}
+
 func TestResolvePaymentMethod(t *testing.T) {
 	r := New()
 	payment := &types.PaymentData{PaymentMethod: "45"}
