@@ -85,6 +85,7 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 	// 3. Detalhes
 
 	recordCount := 0
+	segSeqNum := 0
 	for i := range input.Payments {
 		if err := goCtx.Err(); err != nil {
 			return nil, err
@@ -100,7 +101,8 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 		for _, segCode := range detailSegments {
 			// Remove hífen para encontrar o segmento (ex: J-52 -> j52)
 			segKey := "segmento_" + strings.ReplaceAll(strings.ToLower(segCode), "-", "")
-			segment, err := generateSegment(tmpl, segKey, &detailCtx, resolv, i+1)
+			segSeqNum++
+			segment, err := generateSegment(tmpl, segKey, &detailCtx, resolv, segSeqNum)
 			if err != nil {
 				return nil, fmt.Errorf("erro ao gerar %s para pagamento %d: %w", segKey, i+1, err)
 			}

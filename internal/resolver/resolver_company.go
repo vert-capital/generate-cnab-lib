@@ -17,6 +17,9 @@ func (r *Resolver) registerCompanyResolvers() {
 		return ctx.Company.Agency
 	}
 	r.resolvers["company.agency_digit"] = func(ctx *Context, format string) string {
+		if ctx.Company.AgencyDigit == "" {
+			return "0"
+		}
 		return ctx.Company.AgencyDigit
 	}
 	r.resolvers["company.account"] = func(ctx *Context, format string) string {
@@ -26,6 +29,9 @@ func (r *Resolver) registerCompanyResolvers() {
 		return ctx.Company.AccountDigit
 	}
 	r.resolvers["company.convenio"] = func(ctx *Context, format string) string {
+		return ctx.Company.Convenio
+	}
+	r.resolvers["company.covenant"] = func(ctx *Context, format string) string {
 		return ctx.Company.Convenio
 	}
 	r.resolvers["company.inscription_type"] = func(ctx *Context, format string) string {

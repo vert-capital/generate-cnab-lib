@@ -59,6 +59,17 @@ func (r *Resolver) registerPaymentResolvers() {
 	r.resolvers["payment.ispb"] = paymentResolver(func(p *types.PaymentData) string {
 		return p.ISPB
 	})
+	r.resolvers["payment.ispb_se_sem_compensacao"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return ""
+		}
+		// Só preenche ISPB quando banco destino NÃO possui código de compensação
+		bank := ctx.CurrentPayment.RecipientBank
+		if bank == "" || bank == "000" {
+			return ctx.CurrentPayment.ISPB
+		}
+		return ""
+	}
 	r.resolvers["payment.tipo_conta"] = func(ctx *Context, format string) string {
 		if ctx.CurrentPayment != nil {
 			// Se informado explicitamente, usa o valor fornecido
@@ -115,8 +126,8 @@ func (r *Resolver) registerPaymentResolvers() {
 				}
 			}
 
-			// Força regras de titularidade/banco para transferências
-			if ctx.TemplateName == "cnab240_transferencia" {
+			// Força regras de titularidade/banco para transferências e PIX
+			if ctx.TemplateName == "cnab240_transferencia" || ctx.TemplateName == "cnab240_pix" {
 				if ctx.CurrentPayment.RecipientBank == ctx.Company.BankCode {
 					return "01"
 				}
@@ -169,12 +180,64 @@ func (r *Resolver) registerPaymentResolvers() {
 	r.resolvers["payment.recipient_pix_key"] = paymentResolver(func(p *types.PaymentData) string {
 		return p.RecipientPixKey
 	})
+	r.resolvers["payment.pix_key"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.RecipientPixKey
+	})
+	r.resolvers["payment.pix_txid"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.TXID
+	})
+	r.resolvers["payment.pix_info_between_users"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.Description
+	})
+	r.resolvers["payment.pix_account_type"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment != nil && ctx.CurrentPayment.AccountType != "" {
+			return ctx.CurrentPayment.AccountType
+		}
+		return "01"
+	}
+	r.resolvers["payment.recipient_agency_digit"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.RecipientAgencyDigit
+	})
+	r.resolvers["payment.recipient_account_digit"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.RecipientAccountDigit
+	})
+	r.resolvers["payment.recipient_agency_account_digit"] = paymentResolver(func(p *types.PaymentData) string {
+		return ""
+	})
+	r.resolvers["payment.complemento_finalidade"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return "CC"
+		}
+		if ctx.CurrentPayment.AccountType == "02" {
+			return "PP"
+		}
+		return "CC"
+	}
 	r.resolvers["payment.due_date_ddmmyyyy"] = func(ctx *Context, format string) string {
 		if ctx.CurrentPayment != nil {
 			dueDate := ctx.CurrentPayment.DueDate
 			if len(dueDate) == 8 {
 				return dueDate[6:8] + dueDate[4:6] + dueDate[0:4]
 			}
+		}
+		return ""
+	}
+	r.resolvers["payment.payment_date_ddmmyyyy"] = func(ctx *Context, format string) string {
+		// Data do pagamento: usa due_date como data de pagamento (paga na data de vencimento)
+		if ctx.CurrentPayment != nil {
+			dueDate := ctx.CurrentPayment.DueDate
+			if len(dueDate) == 8 {
+				return dueDate[6:8] + dueDate[4:6] + dueDate[0:4]
+			}
+		}
+		return ctx.Now.Format("02012006")
+	}
+	r.resolvers["payment.payer_name"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment != nil {
+			if ctx.CurrentPayment.Payer.Name != "" {
+				return ctx.CurrentPayment.Payer.Name
+			}
+			return ctx.CurrentPayment.RecipientCompanyName
 		}
 		return ""
 	}
@@ -208,6 +271,134 @@ func (r *Resolver) registerPaymentResolvers() {
 	r.resolvers["payment.tax_type"] = paymentResolver(func(p *types.PaymentData) string {
 		return p.TaxType
 	})
+	r.resolvers["payment.our_number_digit"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.OurNumberDigit
+	})
+	r.resolvers["payment.carteira"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.Carteira
+	})
+	r.resolvers["payment.document_number"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.DocumentNumber
+	})
+	r.resolvers["payment.species"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.Species
+	})
+	r.resolvers["payment.baixa_days"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.BaixaDays
+	})
+	r.resolvers["payment.issue_date_ddmmyyyy"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment != nil {
+			d := ctx.CurrentPayment.IssueDate
+			if len(d) == 8 {
+				return d[6:8] + d[4:6] + d[0:4]
+			}
+		}
+		return ""
+	}
+	r.resolvers["payment.payer.inscription_type"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return ""
+		}
+		t := ctx.CurrentPayment.Payer.InscriptionType
+		if t != "" {
+			return t
+		}
+		// Infere pelo tamanho do número de inscrição
+		inscNum := ctx.CurrentPayment.Payer.InscriptionNumber
+		if inscNum == "" {
+			inscNum = ctx.Company.CNPJ
+		}
+		if len(inscNum) == 11 {
+			return "1"
+		}
+		return "2"
+	}
+	r.resolvers["payment.payer.inscription_number"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return ""
+		}
+		if ctx.CurrentPayment.Payer.InscriptionNumber != "" {
+			return ctx.CurrentPayment.Payer.InscriptionNumber
+		}
+		return ctx.Company.CNPJ
+	}
+	r.resolvers["payment.payer.name"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return ""
+		}
+		if ctx.CurrentPayment.Payer.Name != "" {
+			return ctx.CurrentPayment.Payer.Name
+		}
+		return ctx.Company.CompanyName
+	}
+	r.resolvers["payment.payer.address"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return ""
+		}
+		if ctx.CurrentPayment.Payer.Address != "" {
+			return ctx.CurrentPayment.Payer.Address
+		}
+		return ctx.Company.Address
+	}
+	r.resolvers["payment.payer.neighborhood"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return ""
+		}
+		if ctx.CurrentPayment.Payer.Neighborhood != "" {
+			return ctx.CurrentPayment.Payer.Neighborhood
+		}
+		return ctx.Company.Neighborhood
+	}
+	r.resolvers["payment.payer.cep"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return ""
+		}
+		cep := ctx.CurrentPayment.Payer.CEP
+		if cep == "" {
+			cep = ctx.Company.CEP
+		}
+		// Remove hífen se existir e retorna primeiros 5 dígitos
+		cep = strings.ReplaceAll(cep, "-", "")
+		if len(cep) >= 5 {
+			return cep[:5]
+		}
+		return cep
+	}
+	r.resolvers["payment.payer.cep_complement"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return ""
+		}
+		if ctx.CurrentPayment.Payer.CEPComplement != "" {
+			return ctx.CurrentPayment.Payer.CEPComplement
+		}
+		cep := ctx.CurrentPayment.Payer.CEP
+		if cep == "" {
+			cep = ctx.Company.CEP
+		}
+		cep = strings.ReplaceAll(cep, "-", "")
+		if len(cep) == 8 {
+			return cep[5:]
+		}
+		return ""
+	}
+	r.resolvers["payment.payer.city"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return ""
+		}
+		if ctx.CurrentPayment.Payer.City != "" {
+			return ctx.CurrentPayment.Payer.City
+		}
+		return ctx.Company.City
+	}
+	r.resolvers["payment.payer.state"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return ""
+		}
+		if ctx.CurrentPayment.Payer.State != "" {
+			return ctx.CurrentPayment.Payer.State
+		}
+		return ctx.Company.State
+	}
 	r.resolvers["payment.metadata.dados_tributo"] = func(ctx *Context, format string) string {
 		if ctx.CurrentPayment == nil || ctx.CurrentPayment.Metadata == nil {
 			return ""

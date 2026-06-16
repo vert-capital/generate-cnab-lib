@@ -7,13 +7,17 @@ import (
 )
 
 // FormatValue formata um valor de acordo com o tipo e tamanho.
-// Retorna erro se o valor exceder o tamanho do campo, evitando truncamento silencioso.
+// Campos numéricos retornam erro se excederem o tamanho.
+// Campos alfanuméricos são truncados (comportamento padrão CNAB posicional).
 func FormatValue(value string, length int, fieldType string) (string, error) {
-	if len(value) > length {
-		return "", fmt.Errorf("valor '%s' (%d caracteres) excede o tamanho do campo (%d)", value, len(value), length)
-	}
 	if fieldType == "num" {
+		if len(value) > length {
+			return "", fmt.Errorf("valor '%s' (%d caracteres) excede o tamanho do campo (%d)", value, len(value), length)
+		}
 		return fmt.Sprintf("%0*s", length, value), nil
+	}
+	if len(value) > length {
+		value = value[:length]
 	}
 	return fmt.Sprintf("%-*s", length, value), nil
 }
