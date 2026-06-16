@@ -19,7 +19,7 @@ type CompanyData struct {
 	AgencyDigit       string `json:"agency_digit"`
 	Account           string `json:"account"`
 	AccountDigit      string `json:"account_digit"`
-	Convenio          string `json:"convenio,omitempty"`
+	Convenio          string `json:"agreement_code,omitempty"`
 	Address           string `json:"address,omitempty"`
 	AddressNumber     string `json:"address_number,omitempty"`
 	AddressComplement string `json:"address_complement,omitempty"`

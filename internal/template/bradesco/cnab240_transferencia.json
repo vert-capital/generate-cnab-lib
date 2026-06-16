@@ -321,7 +321,7 @@
       "brancos_2": {
         "pos": [225, 230],
         "type": "alfa",
-        "description": "CNAB - Uso reservado - G004"
+        "description": "CNAB - Uso exclusivo Febraban - G004"
       },
       "ocorrencias": {
         "pos": [231, 240],
@@ -653,17 +653,10 @@
         "description": "Aviso ao Favorecido: 0=Não emite - P006",
         "value": "0"
       },
-      "codigo_ug": {
-        "pos": [227, 232],
-        "type": "num",
-        "description": "Código da UG Centralizadora - P016",
-        "value": "0"
-      },
-      "codigo_ispb": {
-        "pos": [233, 240],
-        "type": "num",
-        "description": "Código ISPB do Banco Favorecido - usar somente quando banco destino NÃO possui código compensação - P017",
-        "source": "payment.ispb_se_sem_compensacao"
+      "brancos_2": {
+        "pos": [227, 240],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
       }
     },
     "trailer_lote": {

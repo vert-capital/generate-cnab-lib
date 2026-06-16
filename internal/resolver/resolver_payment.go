@@ -108,7 +108,8 @@ func (r *Resolver) registerPaymentResolvers() {
 						code = "41"
 					}
 				case "cnab240_boleto":
-					if len(ctx.CurrentPayment.Barcode) >= 3 && ctx.CurrentPayment.Barcode[0:3] == "341" {
+					bc := normalizeBarcode(ctx.CurrentPayment)
+					if len(bc) >= 3 && bc[0:3] == ctx.Company.BankCode {
 						code = "30"
 					} else {
 						code = "31"
@@ -138,7 +139,8 @@ func (r *Resolver) registerPaymentResolvers() {
 
 			// Força regra do banco do código de barras para boletos
 			if ctx.TemplateName == "cnab240_boleto" {
-				if len(ctx.CurrentPayment.Barcode) >= 3 && ctx.CurrentPayment.Barcode[0:3] == "341" {
+				bc := normalizeBarcode(ctx.CurrentPayment)
+				if len(bc) >= 3 && bc[0:3] == ctx.Company.BankCode {
 					return "30"
 				}
 				return "31"
