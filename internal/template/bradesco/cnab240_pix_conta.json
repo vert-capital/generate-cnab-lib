@@ -1,5 +1,5 @@
 {
-  "name": "cnab240_pix",
+  "name": "cnab240_pix_conta",
   "bank_code": "237",
   "cnab_type": "240",
   "file_type": "REMESSA",
@@ -141,8 +141,14 @@
         "value": "01600",
         "description": "Densidade de Gravação do Arquivo - G020"
       },
+      "identificacao_pix": {
+        "pos": [172, 174],
+        "type": "alfa",
+        "value": "PIX",
+        "description": "Identificação Header modalidade PIX (literal 'PIX' em caixa alta) - G021"
+      },
       "reservado_banco": {
-        "pos": [172, 191],
+        "pos": [175, 191],
         "type": "alfa",
         "description": "Para Uso Reservado do Banco - G021"
       },
@@ -185,14 +191,14 @@
       "tipo_servico": {
         "pos": [10, 11],
         "type": "num",
-        "source": "payment.payment_method",
-        "description": "Tipo de Serviço: 01=Crédito CC, 03=DOC, 41=TED Outro Titular, 43=TED Mesmo Titular - G025"
+        "value": "20",
+        "description": "Tipo de Serviço: 20=Pagamento a Fornecedor - G025"
       },
       "forma_lancamento": {
         "pos": [12, 13],
         "type": "num",
-        "source": "payment.payment_method",
-        "description": "Forma de Lançamento: 01=Crédito CC, 03=DOC, 41=TED Outro Titular, 43=TED Mesmo Titular - G029"
+        "value": "45",
+        "description": "Forma de Lançamento: 45=PIX Transferência - G029"
       },
       "versao_layout_lote": {
         "pos": [14, 16],
@@ -375,8 +381,8 @@
       "camara": {
         "pos": [18, 20],
         "type": "num",
-        "source": "payment.camara",
-        "description": "Código da Câmara Centralizadora: 018=TED (STR), 000=Crédito em Conta - P001"
+        "value": "009",
+        "description": "Código da Câmara Centralizadora: 009=PIX (Forma de Lançamento 45) - P001"
       },
       "banco_favorecido": {
         "pos": [21, 23],
@@ -482,14 +488,14 @@
       "finalidade_ted": {
         "pos": [220, 224],
         "type": "alfa",
-        "source": "payment.finalidade_ted",
-        "description": "Código da Finalidade da TED - P011"
+        "value": "",
+        "description": "Código da Finalidade da TED - P011 (não se aplica a PIX/Crédito em Conta)"
       },
       "complemento_finalidade": {
         "pos": [225, 226],
         "type": "alfa",
-        "description": "Complemento da Finalidade: CC=Conta Corrente, PP=Poupança - P013",
-        "source": "payment.complemento_finalidade"
+        "value": "",
+        "description": "Complemento da Finalidade: CC=Conta Corrente, PP=Poupança - P013 (não se aplica a PIX)"
       },
       "brancos_1": {
         "pos": [227, 229],
