@@ -67,7 +67,9 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 	detailSegments := tmpl.DetailSegments
 	if templateName == "cnab240_tributos" && len(input.Payments) > 0 {
 		if code := resolver.TaxTypeToPaymentCode(strings.ToUpper(input.Payments[0].TaxType)); isTributoSemCodigoBarras(code) {
-			headerLoteKey = "header_lote_tributos_sem_codigo_barras"
+			if _, ok := tmpl.Segments["header_lote_tributos_sem_codigo_barras"]; ok {
+				headerLoteKey = "header_lote_tributos_sem_codigo_barras"
+			}
 			detailSegments = []string{"n"}
 		}
 	}
