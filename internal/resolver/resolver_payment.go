@@ -401,6 +401,35 @@ func (r *Resolver) registerPaymentResolvers() {
 		}
 		return ctx.Company.State
 	}
+	r.resolvers["payment.revenue_code"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.RevenueCode
+	})
+	r.resolvers["payment.competence"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.Competence
+	})
+	r.resolvers["payment.darf_simples_receita_bruta"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return formatter.FormatCurrency(0)
+		}
+		if ctx.CurrentPayment.Metadata != nil {
+			if m := metaMap(ctx.CurrentPayment.Metadata, "darf_simples"); m != nil {
+				if v, ok := metaFloat(m, "receita_bruta"); ok {
+					return formatter.FormatCurrency(v)
+				}
+			}
+		}
+		return formatter.FormatCurrency(0)
+	}
+	r.resolvers["payment.darf_simples_percentual"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment != nil && ctx.CurrentPayment.Metadata != nil {
+			if m := metaMap(ctx.CurrentPayment.Metadata, "darf_simples"); m != nil {
+				if v, ok := metaFloat(m, "percentual"); ok {
+					return fmt.Sprintf("%07d", int64(math.Round(v*100)))
+				}
+			}
+		}
+		return "0000000"
+	}
 	r.resolvers["payment.metadata.dados_tributo"] = func(ctx *Context, format string) string {
 		if ctx.CurrentPayment == nil || ctx.CurrentPayment.Metadata == nil {
 			return ""

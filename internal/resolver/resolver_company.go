@@ -37,6 +37,9 @@ func (r *Resolver) registerCompanyResolvers() {
 	r.resolvers["company.inscription_type"] = func(ctx *Context, format string) string {
 		return "2"
 	}
+	r.resolvers["company.tipo_inscricao"] = func(ctx *Context, format string) string {
+		return "2"
+	}
 	r.resolvers["company.address"] = func(ctx *Context, format string) string {
 		return ctx.Company.Address
 	}
@@ -57,5 +60,8 @@ func (r *Resolver) registerCompanyResolvers() {
 	}
 	r.resolvers["company.cep"] = func(ctx *Context, format string) string {
 		return ctx.Company.CEP
+	}
+	r.resolvers["company.cep_complement"] = func(ctx *Context, format string) string {
+		return ""
 	}
 }

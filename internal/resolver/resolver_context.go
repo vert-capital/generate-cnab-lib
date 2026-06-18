@@ -52,6 +52,10 @@ func (r *Resolver) registerContextResolvers() {
 	r.resolvers["context.file_sequence"] = func(ctx *Context, format string) string {
 		return "000001"
 	}
+	// Total de lotes do arquivo. O gerador sempre produz 1 lote por chamada.
+	r.resolvers["context.total_lotes"] = func(ctx *Context, format string) string {
+		return "000001"
+	}
 	// Total de registros do arquivo INCLUINDO o próprio trailer de arquivo (padrão CNAB 240).
 	// Use este source no template quando o banco exige contagem inclusiva (ex.: Bradesco).
 	// O Itaú usa context.total_file_records que EXCLUI o trailer de arquivo.
