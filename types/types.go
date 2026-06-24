@@ -19,7 +19,7 @@ type CompanyData struct {
 	AgencyDigit       string `json:"agency_digit"`
 	Account           string `json:"account"`
 	AccountDigit      string `json:"account_digit"`
-	Convenio          string `json:"convenio,omitempty"`
+	Convenio          string `json:"agreement_code,omitempty"`
 	Address           string `json:"address,omitempty"`
 	AddressNumber     string `json:"address_number,omitempty"`
 	AddressComplement string `json:"address_complement,omitempty"`
@@ -27,6 +27,19 @@ type CompanyData struct {
 	City              string `json:"city,omitempty"`
 	State             string `json:"state,omitempty"`
 	CEP               string `json:"cep,omitempty"`
+}
+
+// PayerData dados do pagador (sacado) em boletos de remessa de cobrança.
+type PayerData struct {
+	InscriptionType   string `json:"inscription_type,omitempty"`   // 1=CPF, 2=CNPJ
+	InscriptionNumber string `json:"inscription_number,omitempty"` // CPF ou CNPJ sem máscara
+	Name              string `json:"name,omitempty"`
+	Address           string `json:"address,omitempty"`
+	Neighborhood      string `json:"neighborhood,omitempty"`
+	CEP               string `json:"cep,omitempty"`       // primeiros 5 dígitos
+	CEPComplement     string `json:"cep_complement,omitempty"` // últimos 3 dígitos
+	City              string `json:"city,omitempty"`
+	State             string `json:"state,omitempty"`
 }
 
 // PaymentData dados de um pagamento individual.
@@ -50,9 +63,16 @@ type PaymentData struct {
 	PaymentType           string                 `json:"payment_type,omitempty"`
 	Description           string                 `json:"description,omitempty"`
 	DueDate               string                 `json:"due_date,omitempty"` // AAAAMMDD
+	IssueDate             string                 `json:"issue_date,omitempty"` // AAAAMMDD
 	Barcode               string                 `json:"barcode,omitempty"`
 	TXID                  string                 `json:"txid,omitempty"`
 	OurNumber             string                 `json:"our_number,omitempty"`
+	OurNumberDigit        string                 `json:"our_number_digit,omitempty"`
+	Carteira              string                 `json:"carteira,omitempty"`
+	DocumentNumber        string                 `json:"document_number,omitempty"`
+	Species               string                 `json:"species,omitempty"`
+	BaixaDays             string                 `json:"baixa_days,omitempty"`
+	Payer                 PayerData              `json:"payer,omitempty"`
 	Discount              float64                `json:"discount,omitempty"`
 	Interest              float64                `json:"interest,omitempty"`
 	InvoiceNumber         string                 `json:"invoice_number,omitempty"`

@@ -48,6 +48,20 @@ func (r *Resolver) registerContextResolvers() {
 		cents := int64(math.Round(outras * 100))
 		return strconv.FormatInt(cents, 10)
 	}
+	// Número sequencial do arquivo (NSA/NSR). Padrão 000001; sobrescreva via metadata se necessário.
+	r.resolvers["context.file_sequence"] = func(ctx *Context, format string) string {
+		return "000001"
+	}
+	// Total de lotes do arquivo. O gerador sempre produz 1 lote por chamada.
+	r.resolvers["context.total_lotes"] = func(ctx *Context, format string) string {
+		return "000001"
+	}
+	// Total de registros do arquivo INCLUINDO o próprio trailer de arquivo (padrão CNAB 240).
+	// Use este source no template quando o banco exige contagem inclusiva (ex.: Bradesco).
+	// O Itaú usa context.total_file_records que EXCLUI o trailer de arquivo.
+	r.resolvers["context.total_file_records_inclusive"] = func(ctx *Context, format string) string {
+		return fmt.Sprintf("%06d", ctx.TotalFileRecords+1)
+	}
 	r.resolvers["context.total_val_acrescimos"] = func(ctx *Context, format string) string {
 		_, _, acrescimos, _ := calcTributeTotals(ctx.Payments)
 		cents := int64(math.Round(acrescimos * 100))

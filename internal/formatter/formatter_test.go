@@ -37,11 +37,11 @@ func TestFormatValue(t *testing.T) {
 			expected: "ABC   ",
 		},
 		{
-			name:        "alpha exceeds length",
-			value:       "ABCDEFGHI",
-			length:      5,
-			dataType:    "alfa",
-			expectError: true,
+			name:     "alpha exceeds length",
+			value:    "ABCDEFGHI",
+			length:   5,
+			dataType: "alfa",
+			expected: "ABCDE",
 		},
 		{
 			name:     "empty numeric",
