@@ -1,0 +1,845 @@
+{
+  "name": "cnab240_transferencia",
+  "bank_code": "033",
+  "cnab_type": "240",
+  "file_type": "REMESSA",
+  "version": "1.0",
+  "line_length": 240,
+  "detail_segments": ["A", "B"],
+  "description": "Layout CNAB 240 para pagamentos via Crédito em CC, Poupança, TED, Caixa e OP - Santander V11.7",
+  "segments": {
+    "header_arquivo": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "033",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "value": "0000",
+        "description": "Lote de Serviço - Header de arquivo"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "0",
+        "description": "Tipo de Registro - Header de arquivo"
+      },
+      "filler_1": {
+        "pos": [9, 17],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "tipo_inscricao": {
+        "pos": [18, 18],
+        "type": "num",
+        "source": "company.inscription_type",
+        "description": "1=CPF, 2=CNPJ"
+      },
+      "numero_inscricao": {
+        "pos": [19, 32],
+        "type": "alfa",
+        "source": "company.cnpj",
+        "description": "CNPJ/CPF da empresa"
+      },
+      "codigo_convenio": {
+        "pos": [33, 52],
+        "type": "alfa",
+        "source": "company.convenio",
+        "description": "Código do Convênio no Banco"
+      },
+      "agencia": {
+        "pos": [53, 57],
+        "type": "num",
+        "source": "company.agency",
+        "description": "Agência Mantenedora da Conta"
+      },
+      "dv_agencia": {
+        "pos": [58, 58],
+        "type": "alfa",
+        "source": "company.agency_digit",
+        "description": "Dígito Verificador da Agência"
+      },
+      "conta": {
+        "pos": [59, 70],
+        "type": "num",
+        "source": "company.account",
+        "description": "Número da Conta Corrente"
+      },
+      "dv_conta": {
+        "pos": [71, 71],
+        "type": "alfa",
+        "source": "company.account_digit",
+        "description": "Dígito Verificador da Conta"
+      },
+      "dv_agencia_conta": {
+        "pos": [72, 72],
+        "type": "alfa",
+        "description": "Dígito Verificador da Ag/Conta - Branco"
+      },
+      "nome_empresa": {
+        "pos": [73, 102],
+        "type": "alfa",
+        "source": "company.name",
+        "description": "Nome da Empresa"
+      },
+      "nome_banco": {
+        "pos": [103, 132],
+        "type": "alfa",
+        "value": "BANCO SANTANDER",
+        "description": "Nome do Banco"
+      },
+      "filler_2": {
+        "pos": [133, 142],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "codigo_remessa": {
+        "pos": [143, 143],
+        "type": "num",
+        "value": "1",
+        "description": "1=Remessa, 2=Retorno"
+      },
+      "data_geracao": {
+        "pos": [144, 151],
+        "type": "num",
+        "source": "context.now_date_ddmmyyyy",
+        "description": "Data de geração do arquivo (DDMMAAAA)"
+      },
+      "hora_geracao": {
+        "pos": [152, 157],
+        "type": "num",
+        "source": "context.now_time",
+        "description": "Hora de geração (HHMMSS)"
+      },
+      "numero_sequencial": {
+        "pos": [158, 163],
+        "type": "num",
+        "value": "000011",
+        "description": "Número Sequencial do Arquivo"
+      },
+      "versao_layout": {
+        "pos": [164, 166],
+        "type": "num",
+        "value": "060",
+        "description": "Nº da Versão do Layout do Arquivo"
+      },
+      "densidade": {
+        "pos": [167, 171],
+        "type": "num",
+        "value": "00000",
+        "description": "Densidade de gravação do arquivo"
+      },
+      "uso_banco": {
+        "pos": [172, 191],
+        "type": "alfa",
+        "description": "Uso Reservado do Banco - Brancos"
+      },
+      "uso_empresa": {
+        "pos": [192, 211],
+        "type": "alfa",
+        "description": "Uso Reservado da Empresa"
+      },
+      "filler_3": {
+        "pos": [212, 230],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa",
+        "description": "Códigos de ocorrências p/ retorno"
+      }
+    },
+    "header_lote": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "033",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico",
+        "description": "Lote de Serviço"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "1",
+        "description": "Tipo de Registro - Header de lote"
+      },
+      "tipo_operacao": {
+        "pos": [9, 9],
+        "type": "alfa",
+        "value": "C",
+        "description": "C=Crédito"
+      },
+      "tipo_servico": {
+        "pos": [10, 11],
+        "type": "num",
+        "value": "20",
+        "description": "20=Pagamento Fornecedor"
+      },
+      "forma_lancamento": {
+        "pos": [12, 13],
+        "type": "num",
+        "source": "payment.payment_method",
+        "description": "01=CC, 03=TED, 05=Poupança, 10=OP, 20=Caixa"
+      },
+      "versao_lote": {
+        "pos": [14, 16],
+        "type": "num",
+        "value": "031",
+        "description": "Nº da Versão do Layout do Lote"
+      },
+      "filler_1": {
+        "pos": [17, 17],
+        "type": "alfa",
+        "description": "Branco"
+      },
+      "tipo_inscricao": {
+        "pos": [18, 18],
+        "type": "num",
+        "source": "company.inscription_type",
+        "description": "1=CPF, 2=CNPJ"
+      },
+      "numero_inscricao": {
+        "pos": [19, 32],
+        "type": "alfa",
+        "source": "company.cnpj",
+        "description": "CNPJ/CPF da empresa"
+      },
+      "codigo_convenio": {
+        "pos": [33, 52],
+        "type": "alfa",
+        "source": "company.convenio",
+        "description": "Código do Convênio no Banco"
+      },
+      "agencia": {
+        "pos": [53, 57],
+        "type": "num",
+        "source": "company.agency",
+        "description": "Agência Mantenedora da Conta"
+      },
+      "dv_agencia": {
+        "pos": [58, 58],
+        "type": "alfa",
+        "source": "company.agency_digit",
+        "description": "Dígito Verificador da Agência"
+      },
+      "conta": {
+        "pos": [59, 70],
+        "type": "num",
+        "source": "company.account",
+        "description": "Número da Conta Corrente"
+      },
+      "dv_conta": {
+        "pos": [71, 71],
+        "type": "alfa",
+        "source": "company.account_digit",
+        "description": "Dígito Verificador da Conta"
+      },
+      "dv_agencia_conta": {
+        "pos": [72, 72],
+        "type": "alfa",
+        "description": "Branco"
+      },
+      "nome_empresa": {
+        "pos": [73, 102],
+        "type": "alfa",
+        "source": "company.name",
+        "description": "Nome da Empresa"
+      },
+      "informacao_1": {
+        "pos": [103, 142],
+        "type": "alfa",
+        "description": "Mensagem - Nota G016"
+      },
+      "endereco": {
+        "pos": [143, 172],
+        "type": "alfa",
+        "source": "company.address",
+        "description": "Endereço da empresa"
+      },
+      "numero": {
+        "pos": [173, 177],
+        "type": "num",
+        "source": "company.address_number",
+        "description": "Número do local"
+      },
+      "complemento": {
+        "pos": [178, 192],
+        "type": "alfa",
+        "source": "company.address_complement",
+        "description": "Complemento do endereço"
+      },
+      "cidade": {
+        "pos": [193, 212],
+        "type": "alfa",
+        "source": "company.city",
+        "description": "Nome da cidade"
+      },
+      "cep": {
+        "pos": [213, 217],
+        "type": "num",
+        "source": "company.cep_prefix",
+        "description": "CEP (5 primeiros dígitos)"
+      },
+      "complemento_cep": {
+        "pos": [218, 220],
+        "type": "num",
+        "source": "company.cep_suffix",
+        "description": "Complemento do CEP (3 últimos dígitos)"
+      },
+      "estado": {
+        "pos": [221, 222],
+        "type": "alfa",
+        "source": "company.state",
+        "description": "Sigla do estado"
+      },
+      "filler_2": {
+        "pos": [223, 230],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa",
+        "description": "Código das ocorrências p/ retorno"
+      }
+    },
+    "segmento_a": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "033",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico",
+        "description": "Lote de Serviço"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe"
+      },
+      "numero_registro": {
+        "pos": [9, 13],
+        "type": "num",
+        "source": "context.seq_num",
+        "description": "Nº Sequencial do Registro no Lote"
+      },
+      "segmento": {
+        "pos": [14, 14],
+        "type": "alfa",
+        "value": "A",
+        "description": "Código do Segmento"
+      },
+      "tipo_movimento": {
+        "pos": [15, 15],
+        "type": "num",
+        "value": "0",
+        "description": "0=Inclusão"
+      },
+      "codigo_instrucao": {
+        "pos": [16, 17],
+        "type": "num",
+        "value": "00",
+        "description": "00=Inclusão liberada"
+      },
+      "camara": {
+        "pos": [18, 20],
+        "type": "num",
+        "source": "payment.camara",
+        "description": "Código Câmara Compensação (000=CC, 018=TED CIP, 810=TED STR)"
+      },
+      "banco_favorecido": {
+        "pos": [21, 23],
+        "type": "num",
+        "source": "payment.recipient_bank",
+        "description": "Código do Banco Favorecido"
+      },
+      "agencia_favorecido": {
+        "pos": [24, 28],
+        "type": "num",
+        "source": "payment.recipient_agency",
+        "description": "Agência do Favorecido"
+      },
+      "dv_agencia_favorecido": {
+        "pos": [29, 29],
+        "type": "alfa",
+        "source": "payment.recipient_agency_digit",
+        "description": "DV da Agência"
+      },
+      "conta_favorecido": {
+        "pos": [30, 41],
+        "type": "num",
+        "source": "payment.recipient_account",
+        "description": "Conta Corrente do Favorecido"
+      },
+      "dv_conta_favorecido": {
+        "pos": [42, 42],
+        "type": "alfa",
+        "source": "payment.recipient_account_digit",
+        "description": "DV da Conta"
+      },
+      "dv_agencia_conta_favorecido": {
+        "pos": [43, 43],
+        "type": "alfa",
+        "source": "payment.metadata.dv_agencia_conta",
+        "description": "DV Agência/Conta"
+      },
+      "nome_favorecido": {
+        "pos": [44, 73],
+        "type": "alfa",
+        "source": "payment.recipient_name",
+        "description": "Nome do Favorecido"
+      },
+      "seu_numero": {
+        "pos": [74, 93],
+        "type": "alfa",
+        "source": "payment.external_id",
+        "description": "Nº do Documento Cliente"
+      },
+      "data_pagamento": {
+        "pos": [94, 101],
+        "type": "num",
+        "source": "payment.due_date_ddmmyyyy",
+        "description": "Data do Pagamento (DDMMAAAA)"
+      },
+      "tipo_moeda": {
+        "pos": [102, 104],
+        "type": "alfa",
+        "value": "BRL",
+        "description": "Tipo da Moeda"
+      },
+      "quantidade_moeda": {
+        "pos": [105, 119],
+        "type": "num",
+        "value": "0",
+        "description": "Quantidade de Moeda - Zeros"
+      },
+      "valor_pagamento": {
+        "pos": [120, 134],
+        "type": "num",
+        "source": "payment.amount",
+        "description": "Valor do Pagamento"
+      },
+      "nosso_numero": {
+        "pos": [135, 154],
+        "type": "alfa",
+        "source": "payment.our_number",
+        "description": "Nº do Documento Banco"
+      },
+      "data_real_pagamento": {
+        "pos": [155, 162],
+        "type": "num",
+        "description": "Data Real do Pagamento (Retorno)"
+      },
+      "valor_real_pagamento": {
+        "pos": [163, 177],
+        "type": "num",
+        "value": "0",
+        "description": "Valor Real do Pagamento"
+      },
+      "informacao_2": {
+        "pos": [178, 217],
+        "type": "alfa",
+        "source": "payment.description",
+        "description": "Mensagem"
+      },
+      "filler_1": {
+        "pos": [218, 219],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "finalidade_ted": {
+        "pos": [220, 224],
+        "type": "alfa",
+        "source": "payment.finalidade_ted",
+        "description": "Finalidade de TED"
+      },
+      "finalidade_complementar": {
+        "pos": [225, 226],
+        "type": "alfa",
+        "source": "payment.metadata.finalidade_complementar",
+        "description": "CC ou PP"
+      },
+      "filler_2": {
+        "pos": [227, 229],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "aviso": {
+        "pos": [230, 230],
+        "type": "num",
+        "value": "0",
+        "description": "0=Não emite aviso"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa",
+        "description": "Códigos de ocorrências p/ retorno"
+      }
+    },
+    "segmento_b": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "033",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico",
+        "description": "Lote de Serviço"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe"
+      },
+      "numero_registro": {
+        "pos": [9, 13],
+        "type": "num",
+        "source": "context.seq_num",
+        "description": "Nº Sequencial do Registro no Lote"
+      },
+      "segmento": {
+        "pos": [14, 14],
+        "type": "alfa",
+        "value": "B",
+        "description": "Código do Segmento"
+      },
+      "filler_1": {
+        "pos": [15, 17],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "tipo_inscricao": {
+        "pos": [18, 18],
+        "type": "num",
+        "source": "payment.recipient_document_type",
+        "description": "1=CPF, 2=CNPJ"
+      },
+      "numero_inscricao": {
+        "pos": [19, 32],
+        "type": "num",
+        "source": "payment.recipient_document",
+        "description": "CPF/CNPJ do Favorecido"
+      },
+      "logradouro": {
+        "pos": [33, 62],
+        "type": "alfa",
+        "source": "payment.metadata.endereco",
+        "description": "Logradouro do Favorecido"
+      },
+      "numero": {
+        "pos": [63, 67],
+        "type": "num",
+        "source": "payment.metadata.numero",
+        "description": "Número do Local"
+      },
+      "complemento": {
+        "pos": [68, 82],
+        "type": "alfa",
+        "source": "payment.metadata.complemento",
+        "description": "Complemento"
+      },
+      "bairro": {
+        "pos": [83, 97],
+        "type": "alfa",
+        "source": "payment.metadata.bairro",
+        "description": "Bairro"
+      },
+      "cidade": {
+        "pos": [98, 117],
+        "type": "alfa",
+        "source": "payment.metadata.cidade",
+        "description": "Cidade"
+      },
+      "cep": {
+        "pos": [118, 125],
+        "type": "num",
+        "source": "payment.metadata.cep",
+        "description": "CEP"
+      },
+      "estado": {
+        "pos": [126, 127],
+        "type": "alfa",
+        "source": "payment.metadata.estado",
+        "description": "UF"
+      },
+      "data_vencimento": {
+        "pos": [128, 135],
+        "type": "num",
+        "source": "payment.due_date_ddmmyyyy",
+        "description": "Data de Vencimento (DDMMAAAA)"
+      },
+      "valor_documento": {
+        "pos": [136, 150],
+        "type": "num",
+        "source": "payment.amount",
+        "description": "Valor do Documento"
+      },
+      "valor_abatimento": {
+        "pos": [151, 165],
+        "type": "num",
+        "source": "payment.metadata.abatimento",
+        "description": "Valor do Abatimento"
+      },
+      "valor_desconto": {
+        "pos": [166, 180],
+        "type": "num",
+        "source": "payment.discount",
+        "description": "Valor do Desconto"
+      },
+      "valor_mora": {
+        "pos": [181, 195],
+        "type": "num",
+        "source": "payment.interest",
+        "description": "Valor da Mora"
+      },
+      "valor_multa": {
+        "pos": [196, 210],
+        "type": "num",
+        "source": "payment.metadata.multa",
+        "description": "Valor da Multa"
+      },
+      "horario_ted": {
+        "pos": [211, 214],
+        "type": "num",
+        "value": "0000",
+        "description": "Horário de Envio de TED"
+      },
+      "filler_2": {
+        "pos": [215, 225],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "codigo_historico": {
+        "pos": [226, 229],
+        "type": "num",
+        "source": "payment.metadata.codigo_historico",
+        "description": "Código Histórico para Crédito"
+      },
+      "aviso": {
+        "pos": [230, 230],
+        "type": "num",
+        "value": "0",
+        "description": "Emissão de Aviso ao Favorecido"
+      },
+      "ocorrencias": {
+        "pos": [231, 231],
+        "type": "alfa",
+        "description": "Ocorrências retorno"
+      },
+      "ted_if": {
+        "pos": [232, 232],
+        "type": "alfa",
+        "source": "payment.metadata.ted_if",
+        "description": "TED para IF (S/N/J)"
+      },
+      "ispb": {
+        "pos": [233, 240],
+        "type": "alfa",
+        "source": "payment.ispb",
+        "description": "Código ISPB da IF"
+      }
+    },
+    "trailer_lote": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "033",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico",
+        "description": "Lote de Serviço"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "5",
+        "description": "Tipo de Registro - Trailer de lote"
+      },
+      "filler_1": {
+        "pos": [9, 17],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "quantidade_registros": {
+        "pos": [18, 23],
+        "type": "num",
+        "source": "context.record_count",
+        "description": "Qtde de registros do lote (tipos 1, 3, 5)"
+      },
+      "soma_valores": {
+        "pos": [24, 41],
+        "type": "num",
+        "source": "context.total_amount",
+        "description": "Somatória dos valores"
+      },
+      "soma_moedas": {
+        "pos": [42, 59],
+        "type": "num",
+        "value": "0",
+        "description": "Somatória Quantidade Moeda"
+      },
+      "numero_aviso_debito": {
+        "pos": [60, 65],
+        "type": "num",
+        "value": "000000",
+        "description": "Número Aviso de Débito"
+      },
+      "filler_2": {
+        "pos": [66, 230],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa",
+        "description": "Códigos de ocorrências p/ retorno"
+      }
+    },
+    "trailer_arquivo": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "033",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "value": "9999",
+        "description": "Lote de Serviço - Trailer"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "9",
+        "description": "Tipo de Registro - Trailer de arquivo"
+      },
+      "filler_1": {
+        "pos": [9, 17],
+        "type": "alfa",
+        "description": "Brancos"
+      },
+      "quantidade_lotes": {
+        "pos": [18, 23],
+        "type": "num",
+        "value": "000001",
+        "description": "Qtde de lotes do arquivo"
+      },
+      "quantidade_registros": {
+        "pos": [24, 29],
+        "type": "num",
+        "source": "context.total_file_records_inclusive",
+        "description": "Qtde de registros do arquivo (tipos 0,1,3,5,9)"
+      },
+      "filler_2": {
+        "pos": [30, 240],
+        "type": "alfa",
+        "description": "Brancos"
+      }
+    }
+  },
+  "ocorrencias": {
+    "00": "Crédito ou Débito Efetivado",
+    "01": "Insuficiência de Fundos - Débito Não Efetuado",
+    "02": "Crédito ou Débito Cancelado pelo Pagador/Credor",
+    "03": "Débito Autorizado pela Agência - Efetuado",
+    "AA": "Controle Inválido",
+    "AB": "Tipo de Operação Inválido",
+    "AC": "Tipo de Serviço Inválido",
+    "AD": "Forma de Lançamento Inválida",
+    "AE": "Tipo/Número de Inscrição Inválido",
+    "AF": "Código de Convênio Inválido",
+    "AG": "Agência/Conta Corrente/DV Inválido",
+    "AH": "Número Sequencial do Registro no Lote Inválido",
+    "AI": "Código de Segmento de Detalhe Inválido",
+    "AJ": "Tipo de Movimento Inválido",
+    "AK": "Código da Câmara de Compensação Inválido",
+    "AL": "Código do Banco do Favorecido Inválido",
+    "AM": "Agência Mantenedora da Conta do Favorecido Inválida",
+    "AN": "Conta Corrente/DV do Favorecido Inválido",
+    "AO": "Nome do Favorecido não Informado",
+    "AP": "Data Lançamento Inválida/Vencimento Inválido",
+    "AQ": "Tipo/Quantidade da Moeda Inválido",
+    "AR": "Valor do Lançamento Inválido/Divergente/Zerado",
+    "AS": "Aviso ao Favorecido - Identificação Inválida",
+    "AT": "Tipo/Número de Inscrição do Favorecido Inválido",
+    "AU": "Logradouro do Favorecido não Informado",
+    "AV": "Número do Local do Favorecido não Informado",
+    "AW": "Cidade do Favorecido não Informada",
+    "AX": "CEP/Complemento do Favorecido Inválido",
+    "AY": "Sigla do Estado do Favorecido Inválido",
+    "AZ": "Código/Nome do Banco Depositário Inválido",
+    "BA": "Código/Nome da Agência Depositário não Informado",
+    "BB": "Número do Documento Inválido (Seu Número)",
+    "BC": "Nosso Número Inválido",
+    "BD": "Inclusão Efetuada com Sucesso",
+    "BE": "Alteração Efetuada com Sucesso",
+    "BF": "Exclusão Efetuada com Sucesso",
+    "BG": "Agência/Conta Impedida Legalmente",
+    "B1": "Bloqueado Pendente de Autorização",
+    "B3": "Bloqueado pelo cliente",
+    "HA": "Lote Não Aceito",
+    "HB": "Inscrição da Empresa Inválida para o Contrato",
+    "HC": "Convênio com a Empresa Inexistente/Inválido",
+    "HD": "Agência/Conta Corrente da Empresa Inexistente/Inválida",
+    "HE": "Tipo de Serviço Inválido para o Contrato",
+    "HF": "Conta Corrente da Empresa com Saldo Insuficiente",
+    "HI": "Arquivo não aceito",
+    "ZA": "Transferência Devolvida",
+    "ZB": "Transferência mesma titularidade não permitida",
+    "ZG": "Banco destino não recebe TED/Pix"
+  },
+  "input_validations": [
+    {
+      "source": "payment.recipient_bank",
+      "required": true,
+      "exact_length": 3,
+      "numeric_only": true
+    },
+    {
+      "source": "payment.recipient_agency",
+      "required": true,
+      "max_length": 5
+    },
+    {
+      "source": "payment.recipient_account",
+      "required": true,
+      "max_length": 12
+    },
+    {
+      "source": "payment.recipient_name",
+      "required": true,
+      "max_length": 30
+    },
+    {
+      "source": "payment.external_id",
+      "required": true,
+      "max_length": 20
+    },
+    {
+      "source": "payment.amount",
+      "required": true
+    }
+  ]
+}
