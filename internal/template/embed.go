@@ -8,34 +8,36 @@ import (
 	"sync"
 )
 
-//go:embed itau/*.json bradesco/*.json
+//go:embed itau/*.json santander/*.json bradesco/*.json
 var templatesFS embed.FS
 
 const defaultLineLength = 240
 
-var loadTemplates = sync.OnceValues(func() (map[string]Config, error) {
-	dirs := []string{"itau", "bradesco"}
+var bankDirs = []string{"itau", "santander", "bradesco"}
 
+var loadTemplates = sync.OnceValues(func() (map[string]Config, error) {
 	result := make(map[string]Config)
-	for _, dir := range dirs {
+
+	for _, dir := range bankDirs {
 		files, err := templatesFS.ReadDir(dir)
 		if err != nil {
 			return nil, err
 		}
+
 		for _, f := range files {
 			if f.IsDir() || !strings.HasSuffix(f.Name(), ".json") {
 				continue
 			}
 			data, err := templatesFS.ReadFile(dir + "/" + f.Name())
 			if err != nil {
-				return nil, fmt.Errorf("erro ao ler %s: %w", f.Name(), err)
+				return nil, fmt.Errorf("erro ao ler %s/%s: %w", dir, f.Name(), err)
 			}
 			var tmpl Config
 			if err := json.Unmarshal(data, &tmpl); err != nil {
-				return nil, fmt.Errorf("erro ao fazer parse de %s: %w", f.Name(), err)
+				return nil, fmt.Errorf("erro ao fazer parse de %s/%s: %w", dir, f.Name(), err)
 			}
 			if err := validatePositions(tmpl); err != nil {
-				return nil, fmt.Errorf("template %s inválido: %w", f.Name(), err)
+				return nil, fmt.Errorf("template %s/%s inválido: %w", dir, f.Name(), err)
 			}
 			if tmpl.LineLength == 0 {
 				tmpl.LineLength = defaultLineLength

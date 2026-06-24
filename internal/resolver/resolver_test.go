@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vert-capital/generate-cnab-lib/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vert-capital/generate-cnab-lib/types"
 )
 
 func TestNewResolver(t *testing.T) {
@@ -630,9 +630,9 @@ func TestResolvePixKeyType(t *testing.T) {
 		// Inferência por UUID
 		{"infer UUID", "", "abc12345-1234-1234-1234-123456789abc", "04"},
 
-		// Vazio
+		// Vazio e Inferência
 		{"empty", "", "", ""},
-		{"nil metadata", "", "test@example.com", ""},
+		{"nil metadata", "", "test@example.com", "02"},
 	}
 
 	for _, tt := range tests {

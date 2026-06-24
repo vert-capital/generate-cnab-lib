@@ -99,6 +99,8 @@ func TaxTypeToPaymentCode(code string) string {
 		return "22"
 	case "IPVA":
 		return "25"
+	case "LICENCIAMENTO":
+		return "26"
 	case "DPVAT":
 		return "27"
 	case "FGTS":

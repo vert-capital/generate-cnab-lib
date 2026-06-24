@@ -1,5 +1,11 @@
 package resolver
 
+import (
+	"strings"
+
+	"github.com/vert-capital/generate-cnab-lib/internal/formatter"
+)
+
 func (r *Resolver) registerCompanyResolvers() {
 	r.resolvers["company.cnpj"] = func(ctx *Context, format string) string {
 		return ctx.Company.CNPJ
@@ -29,7 +35,17 @@ func (r *Resolver) registerCompanyResolvers() {
 		return ctx.Company.AccountDigit
 	}
 	r.resolvers["company.convenio"] = func(ctx *Context, format string) string {
-		return ctx.Company.Convenio
+		conv := ctx.Company.Convenio
+		// Santander (033) - Nota G009: o campo de 20 posições é composto por
+		// BBBB (banco) + AAAA (agência sem DV) + CCCCCCCCCCCC (convênio à direita).
+		// Se o usuário já informou as 20 posições, usa como veio.
+		if ctx.Company.BankCode == "033" && len(conv) < 20 {
+			banco := formatter.PadLeftZeros(ctx.Company.BankCode, 4)
+			agencia := formatter.PadLeftZeros(ctx.Company.Agency, 4)
+			convenio := formatter.PadLeftZeros(conv, 12)
+			return banco + agencia + convenio
+		}
+		return conv
 	}
 	r.resolvers["company.covenant"] = func(ctx *Context, format string) string {
 		return ctx.Company.Convenio
@@ -60,6 +76,23 @@ func (r *Resolver) registerCompanyResolvers() {
 	}
 	r.resolvers["company.cep"] = func(ctx *Context, format string) string {
 		return ctx.Company.CEP
+	}
+	r.resolvers["company.cep_prefix"] = func(ctx *Context, format string) string {
+		cep := strings.ReplaceAll(ctx.Company.CEP, "-", "")
+		if len(cep) >= 5 {
+			return cep[0:5]
+		}
+		return cep
+	}
+	r.resolvers["company.cep_suffix"] = func(ctx *Context, format string) string {
+		cep := strings.ReplaceAll(ctx.Company.CEP, "-", "")
+		if len(cep) >= 8 {
+			return cep[5:8]
+		}
+		if len(cep) > 5 {
+			return cep[5:]
+		}
+		return "000"
 	}
 	r.resolvers["company.cep_complement"] = func(ctx *Context, format string) string {
 		return ""
