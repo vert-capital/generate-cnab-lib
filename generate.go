@@ -69,11 +69,11 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 		if code := resolver.TaxTypeToPaymentCode(strings.ToUpper(input.Payments[0].TaxType)); isTributoSemCodigoBarras(code) {
 			// Só troca o header dinamicamente se o template tiver a variante específica
 			// (layout do Itaú). Templates que separam o tributo em arquivos próprios
-			// (ex: Santander) mantêm o header_lote padrão e seus detail_segments.
+			// (ex: Santander) mantêm o header_lote padrão.
 			if _, ok := tmpl.Segments["header_lote_tributos_sem_codigo_barras"]; ok {
 				headerLoteKey = "header_lote_tributos_sem_codigo_barras"
-				detailSegments = []string{"n"}
 			}
+			detailSegments = []string{"n"}
 		}
 	}
 	if len(detailSegments) == 0 {

@@ -357,8 +357,8 @@ func TestGenerate_Transferencia(t *testing.T) {
 	segmentoB := lines[3]
 	assert.Equal(t, "341", segmentoB[0:3])
 	assert.Equal(t, "B", segmentoB[13:14])
-	// Email do favorecido (vindo do metadata)
-	assert.Contains(t, segmentoB[127:227], "fornecedor@example.com")
+	// Email do favorecido (vindo do metadata) - campos alfa são normalizados para maiúsculas
+	assert.Contains(t, segmentoB[127:227], "FORNECEDOR@EXAMPLE.COM")
 }
 
 // TestGenerate_Tributo testa a geração de arquivo CNAB para pagamento de tributos SEM código de barras (DARF Normal - Segmento N)

@@ -3,6 +3,7 @@ package resolver
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/vert-capital/generate-cnab-lib/types"
 )
@@ -35,16 +36,19 @@ func interfaceToString(v interface{}) string {
 
 // normalizeBarcode retorna o código de barras normalizado (44 posições).
 // Se o barcode tiver 47 posições (linha digitável), converte para código de barras.
+// Remove automaticamente pontos, espaços e hífens da entrada.
 func normalizeBarcode(p *types.PaymentData) string {
 	if p == nil {
 		return ""
 	}
-	if len(p.Barcode) == 47 {
-		if converted, err := ConvertLinhaDigitavelToBarcode(p.Barcode); err == nil {
+	// Remove pontos, espaços e hífens (máscaras comuns de linha digitável)
+	cleaned := strings.NewReplacer(".", "", " ", "", "-", "").Replace(p.Barcode)
+	if len(cleaned) == 47 {
+		if converted, err := ConvertLinhaDigitavelToBarcode(cleaned); err == nil {
 			return converted
 		}
 	}
-	return p.Barcode
+	return cleaned
 }
 
 // ConvertLinhaDigitavelToBarcode converte uma linha digitável de 47 posições

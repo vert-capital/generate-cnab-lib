@@ -1,0 +1,725 @@
+{
+  "name": "cnab240_tributos",
+  "bank_code": "237",
+  "cnab_type": "240",
+  "file_type": "REMESSA",
+  "version": "1.0",
+  "line_length": 240,
+  "detail_segments": ["O", "N"],
+  "description": "Layout CNAB 240 para pagamentos de Tributos e Arrecadacao (DARF, GPS, FGTS, GARE, GNRE, etc.) via Bradesco - MULTIPAG Versao 04",
+  "segments": {
+    "header_arquivo": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "237"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "value": "0000"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "0"
+      },
+      "brancos_1": {
+        "pos": [9, 17],
+        "type": "alfa"
+      },
+      "tipo_inscricao": {
+        "pos": [18, 18],
+        "type": "num",
+        "source": "company.tipo_inscricao"
+      },
+      "numero_inscricao": {
+        "pos": [19, 32],
+        "type": "num",
+        "source": "company.cnpj"
+      },
+      "convenio": {
+        "pos": [33, 52],
+        "type": "alfa",
+        "source": "company.covenant"
+      },
+      "agencia": {
+        "pos": [53, 57],
+        "type": "num",
+        "source": "company.agency"
+      },
+      "dv_agencia": {
+        "pos": [58, 58],
+        "type": "alfa",
+        "source": "company.agency_digit"
+      },
+      "conta": {
+        "pos": [59, 70],
+        "type": "num",
+        "source": "company.account"
+      },
+      "dv_conta": {
+        "pos": [71, 71],
+        "type": "alfa",
+        "source": "company.account_digit"
+      },
+      "dv_agencia_conta": {
+        "pos": [72, 72],
+        "type": "alfa",
+        "source": "company.agency_account_digit"
+      },
+      "nome_empresa": {
+        "pos": [73, 102],
+        "type": "alfa",
+        "source": "company.name"
+      },
+      "nome_banco": {
+        "pos": [103, 132],
+        "type": "alfa",
+        "value": "BANCO BRADESCO SA"
+      },
+      "brancos_2": {
+        "pos": [133, 142],
+        "type": "alfa"
+      },
+      "codigo_remessa": {
+        "pos": [143, 143],
+        "type": "num",
+        "value": "1"
+      },
+      "data_geracao": {
+        "pos": [144, 151],
+        "type": "num",
+        "source": "context.now_date_ddmmyyyy"
+      },
+      "hora_geracao": {
+        "pos": [152, 157],
+        "type": "num",
+        "source": "context.now_time"
+      },
+      "numero_sequencial": {
+        "pos": [158, 163],
+        "type": "num",
+        "source": "context.file_sequence"
+      },
+      "versao_layout": {
+        "pos": [164, 166],
+        "type": "num",
+        "value": "089"
+      },
+      "densidade": {
+        "pos": [167, 171],
+        "type": "num",
+        "value": "01600"
+      },
+      "reservado_banco": {
+        "pos": [172, 191],
+        "type": "alfa"
+      },
+      "reservado_empresa": {
+        "pos": [192, 211],
+        "type": "alfa"
+      },
+      "brancos_3": {
+        "pos": [212, 240],
+        "type": "alfa"
+      }
+    },
+    "header_lote": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "237"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "1"
+      },
+      "tipo_operacao": {
+        "pos": [9, 9],
+        "type": "alfa",
+        "value": "C"
+      },
+      "tipo_servico": {
+        "pos": [10, 11],
+        "type": "num",
+        "value": "22"
+      },
+      "forma_lancamento": {
+        "pos": [12, 13],
+        "type": "num",
+        "value": "11"
+      },
+      "versao_layout_lote": {
+        "pos": [14, 16],
+        "type": "num",
+        "value": "012"
+      },
+      "brancos_1": {
+        "pos": [17, 17],
+        "type": "alfa"
+      },
+      "tipo_inscricao": {
+        "pos": [18, 18],
+        "type": "num",
+        "source": "company.tipo_inscricao"
+      },
+      "numero_inscricao": {
+        "pos": [19, 32],
+        "type": "num",
+        "source": "company.cnpj"
+      },
+      "convenio": {
+        "pos": [33, 52],
+        "type": "alfa",
+        "source": "company.covenant"
+      },
+      "agencia": {
+        "pos": [53, 57],
+        "type": "num",
+        "source": "company.agency"
+      },
+      "dv_agencia": {
+        "pos": [58, 58],
+        "type": "alfa",
+        "source": "company.agency_digit"
+      },
+      "conta": {
+        "pos": [59, 70],
+        "type": "num",
+        "source": "company.account"
+      },
+      "dv_conta": {
+        "pos": [71, 71],
+        "type": "alfa",
+        "source": "company.account_digit"
+      },
+      "dv_agencia_conta": {
+        "pos": [72, 72],
+        "type": "alfa",
+        "source": "company.agency_account_digit"
+      },
+      "nome_empresa": {
+        "pos": [73, 102],
+        "type": "alfa",
+        "source": "company.name"
+      },
+      "mensagem": {
+        "pos": [103, 142],
+        "type": "alfa"
+      },
+      "endereco_empresa": {
+        "pos": [143, 172],
+        "type": "alfa",
+        "source": "company.address"
+      },
+      "numero_endereco": {
+        "pos": [173, 177],
+        "type": "num",
+        "source": "company.address_number"
+      },
+      "complemento_endereco": {
+        "pos": [178, 192],
+        "type": "alfa",
+        "source": "company.address_complement"
+      },
+      "cidade": {
+        "pos": [193, 212],
+        "type": "alfa",
+        "source": "company.city"
+      },
+      "cep": {
+        "pos": [213, 217],
+        "type": "num",
+        "source": "company.cep"
+      },
+      "complemento_cep": {
+        "pos": [218, 220],
+        "type": "alfa",
+        "source": "company.cep_complement"
+      },
+      "estado": {
+        "pos": [221, 222],
+        "type": "alfa",
+        "source": "company.state"
+      },
+      "indicador_forma_pagto": {
+        "pos": [223, 224],
+        "type": "num",
+        "value": "01"
+      },
+      "brancos_2": {
+        "pos": [225, 230],
+        "type": "alfa"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa"
+      }
+    },
+    "header_lote_tributos_sem_codigo_barras": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "237"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "1"
+      },
+      "tipo_operacao": {
+        "pos": [9, 9],
+        "type": "alfa",
+        "value": "C"
+      },
+      "tipo_servico": {
+        "pos": [10, 11],
+        "type": "num",
+        "value": "22"
+      },
+      "forma_lancamento": {
+        "pos": [12, 13],
+        "type": "num",
+        "source": "payment.payment_method"
+      },
+      "versao_layout_lote": {
+        "pos": [14, 16],
+        "type": "num",
+        "value": "012"
+      },
+      "brancos_1": {
+        "pos": [17, 17],
+        "type": "alfa"
+      },
+      "tipo_inscricao": {
+        "pos": [18, 18],
+        "type": "num",
+        "source": "company.tipo_inscricao"
+      },
+      "numero_inscricao": {
+        "pos": [19, 32],
+        "type": "num",
+        "source": "company.cnpj"
+      },
+      "convenio": {
+        "pos": [33, 52],
+        "type": "alfa",
+        "source": "company.covenant"
+      },
+      "agencia": {
+        "pos": [53, 57],
+        "type": "num",
+        "source": "company.agency"
+      },
+      "dv_agencia": {
+        "pos": [58, 58],
+        "type": "alfa",
+        "source": "company.agency_digit"
+      },
+      "conta": {
+        "pos": [59, 70],
+        "type": "num",
+        "source": "company.account"
+      },
+      "dv_conta": {
+        "pos": [71, 71],
+        "type": "alfa",
+        "source": "company.account_digit"
+      },
+      "dv_agencia_conta": {
+        "pos": [72, 72],
+        "type": "alfa",
+        "source": "company.agency_account_digit"
+      },
+      "nome_empresa": {
+        "pos": [73, 102],
+        "type": "alfa",
+        "source": "company.name"
+      },
+      "mensagem": {
+        "pos": [103, 142],
+        "type": "alfa"
+      },
+      "endereco_empresa": {
+        "pos": [143, 172],
+        "type": "alfa",
+        "source": "company.address"
+      },
+      "numero_endereco": {
+        "pos": [173, 177],
+        "type": "num",
+        "source": "company.address_number"
+      },
+      "complemento_endereco": {
+        "pos": [178, 192],
+        "type": "alfa",
+        "source": "company.address_complement"
+      },
+      "cidade": {
+        "pos": [193, 212],
+        "type": "alfa",
+        "source": "company.city"
+      },
+      "cep": {
+        "pos": [213, 217],
+        "type": "num",
+        "source": "company.cep"
+      },
+      "complemento_cep": {
+        "pos": [218, 220],
+        "type": "alfa",
+        "source": "company.cep_complement"
+      },
+      "estado": {
+        "pos": [221, 222],
+        "type": "alfa",
+        "source": "company.state"
+      },
+      "indicador_forma_pagto": {
+        "pos": [223, 224],
+        "type": "num",
+        "value": "01"
+      },
+      "brancos_2": {
+        "pos": [225, 230],
+        "type": "alfa"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa"
+      }
+    },
+    "segmento_o": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "237"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "3"
+      },
+      "numero_registro": {
+        "pos": [9, 13],
+        "type": "num",
+        "source": "context.seq_num"
+      },
+      "segmento": {
+        "pos": [14, 14],
+        "type": "alfa",
+        "value": "O"
+      },
+      "tipo_movimento": {
+        "pos": [15, 15],
+        "type": "num",
+        "value": "0"
+      },
+      "codigo_instrucao": {
+        "pos": [16, 17],
+        "type": "num",
+        "value": "00"
+      },
+      "codigo_barras": {
+        "pos": [18, 61],
+        "type": "alfa",
+        "source": "payment.barcode"
+      },
+      "nome_concessionaria": {
+        "pos": [62, 91],
+        "type": "alfa",
+        "source": "payment.recipient_name"
+      },
+      "data_vencimento": {
+        "pos": [92, 99],
+        "type": "num",
+        "source": "payment.due_date_ddmmyyyy"
+      },
+      "data_pagamento": {
+        "pos": [100, 107],
+        "type": "num",
+        "source": "payment.payment_date_ddmmyyyy"
+      },
+      "valor_pagamento": {
+        "pos": [108, 122],
+        "type": "num",
+        "source": "payment.amount"
+      },
+      "seu_numero": {
+        "pos": [123, 142],
+        "type": "alfa",
+        "source": "payment.external_id"
+      },
+      "nosso_numero": {
+        "pos": [143, 162],
+        "type": "alfa"
+      },
+      "brancos_1": {
+        "pos": [163, 230],
+        "type": "alfa"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa"
+      }
+    },
+    "segmento_n": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "237"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "3"
+      },
+      "numero_registro": {
+        "pos": [9, 13],
+        "type": "num",
+        "source": "context.seq_num"
+      },
+      "segmento": {
+        "pos": [14, 14],
+        "type": "alfa",
+        "value": "N"
+      },
+      "tipo_movimento": {
+        "pos": [15, 15],
+        "type": "num",
+        "value": "0"
+      },
+      "codigo_instrucao": {
+        "pos": [16, 17],
+        "type": "num",
+        "value": "00"
+      },
+      "seu_numero": {
+        "pos": [18, 37],
+        "type": "alfa",
+        "source": "payment.external_id"
+      },
+      "nosso_numero": {
+        "pos": [38, 57],
+        "type": "alfa"
+      },
+      "nome_contribuinte": {
+        "pos": [58, 87],
+        "type": "alfa",
+        "source": "payment.payer_name"
+      },
+      "data_pagamento": {
+        "pos": [88, 95],
+        "type": "num",
+        "source": "payment.due_date_ddmmyyyy"
+      },
+      "valor_pagamento": {
+        "pos": [96, 110],
+        "type": "num",
+        "source": "payment.amount"
+      },
+      "codigo_receita": {
+        "pos": [111, 116],
+        "type": "alfa",
+        "source": "payment.revenue_code"
+      },
+      "tipo_inscricao_contribuinte": {
+        "pos": [117, 118],
+        "type": "num",
+        "source": "payment.recipient_document_type"
+      },
+      "numero_inscricao": {
+        "pos": [119, 132],
+        "type": "num",
+        "source": "payment.recipient_document"
+      },
+      "codigo_tributo": {
+        "pos": [133, 134],
+        "type": "num",
+        "source": "payment.payment_method"
+      },
+      "competencia": {
+        "pos": [135, 142],
+        "type": "num",
+        "source": "payment.competence"
+      },
+      "receita_bruta": {
+        "pos": [143, 157],
+        "type": "num",
+        "source": "payment.darf_simples_receita_bruta"
+      },
+      "percentual": {
+        "pos": [158, 164],
+        "type": "num",
+        "source": "payment.darf_simples_percentual"
+      },
+      "valor_principal": {
+        "pos": [165, 179],
+        "type": "num",
+        "source": "payment.amount"
+      },
+      "valor_multa": {
+        "pos": [180, 194],
+        "type": "num",
+        "value": "0"
+      },
+      "valor_juros": {
+        "pos": [195, 209],
+        "type": "num",
+        "value": "0"
+      },
+      "brancos_febraban": {
+        "pos": [210, 230],
+        "type": "alfa"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa"
+      }
+    },
+    "trailer_lote": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "237"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "5"
+      },
+      "brancos_1": {
+        "pos": [9, 17],
+        "type": "alfa"
+      },
+      "quantidade_registros": {
+        "pos": [18, 23],
+        "type": "num",
+        "source": "context.record_count"
+      },
+      "soma_valores": {
+        "pos": [24, 41],
+        "type": "num",
+        "source": "context.total_amount"
+      },
+      "quantidade_moeda": {
+        "pos": [42, 59],
+        "type": "num",
+        "value": "0000000000000000"
+      },
+      "numero_aviso_debito": {
+        "pos": [60, 65],
+        "type": "num",
+        "value": "000000"
+      },
+      "brancos_2": {
+        "pos": [66, 230],
+        "type": "alfa"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa"
+      }
+    },
+    "trailer_arquivo": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "237"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "value": "9999"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "9"
+      },
+      "brancos_1": {
+        "pos": [9, 17],
+        "type": "alfa"
+      },
+      "quantidade_lotes": {
+        "pos": [18, 23],
+        "type": "num",
+        "source": "context.total_lotes"
+      },
+      "quantidade_registros": {
+        "pos": [24, 29],
+        "type": "num",
+        "source": "context.total_file_records_inclusive"
+      },
+      "quantidade_contas": {
+        "pos": [30, 35],
+        "type": "num",
+        "value": "000000"
+      },
+      "brancos_2": {
+        "pos": [36, 240],
+        "type": "alfa"
+      }
+    }
+  },
+  "ocorrencias": {
+    "00": "Pagamento Efetuado",
+    "BD": "Pagamento Agendado",
+    "AG": "Numero do Lote Invalido",
+    "AH": "Numero Sequencial do Registro no Lote Invalido",
+    "AJ": "Tipo de Movimento Invalido",
+    "AP": "Data de Pagamento Invalida",
+    "AR": "Valor do Pagamento Invalido",
+    "BC": "Nosso Numero Invalido",
+    "CD": "CPF/CNPJ Informado Divergente do Cadastrado",
+    "CE": "Pagamento Cancelado",
+    "CF": "Valor do Documento Invalido",
+    "CI": "CPF/CNPJ/Inscricao Estadual Invalido",
+    "CL": "Valor do INSS Invalido",
+    "CO": "Valor de Outras Entidades Invalido",
+    "RJ": "Registro Rejeitado",
+    "SS": "Pagamento Cancelado por Insuficiencia de Saldo"
+  },
+  "input_validations": [
+    {
+      "source": "payment.amount",
+      "required": true
+    },
+    {
+      "source": "payment.due_date_ddmmyyyy",
+      "required": true
+    },
+    {
+      "source": "payment.external_id",
+      "required": true,
+      "max_length": 20
+    }
+  ]
+}
