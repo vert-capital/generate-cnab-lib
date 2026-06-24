@@ -23,6 +23,10 @@ func TestLoadTemplates(t *testing.T) {
 		"341_cnab240_boleto_retorno",
 		"341_cnab240_transferencia_retorno",
 		"341_cnab240_tributos_retorno",
+		"033_cnab240_pix_conta_retorno",
+		"033_cnab240_boleto_retorno",
+		"033_cnab240_transferencia_retorno",
+		"033_cnab240_tributos_retorno",
 	}
 
 	for _, key := range expectedTemplates {

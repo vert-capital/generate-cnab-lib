@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/vert-capital/generate-cnab-lib/internal/template"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vert-capital/generate-cnab-lib/internal/template"
 )
 
 func TestParseEmptyFile(t *testing.T) {

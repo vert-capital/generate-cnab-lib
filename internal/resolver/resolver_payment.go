@@ -26,6 +26,15 @@ func (r *Resolver) registerPaymentResolvers() {
 	r.resolvers["payment.recipient_account"] = paymentResolver(func(p *types.PaymentData) string {
 		return p.RecipientAccount
 	})
+	r.resolvers["payment.recipient_agency_digit"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.RecipientAgencyDigit
+	})
+	r.resolvers["payment.recipient_account_digit"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.RecipientAccountDigit
+	})
+	r.resolvers["payment.description"] = paymentResolver(func(p *types.PaymentData) string {
+		return p.Description
+	})
 	r.resolvers["payment.agencia_conta"] = func(ctx *Context, format string) string {
 		if ctx.CurrentPayment == nil {
 			return ""
@@ -97,7 +106,8 @@ func (r *Resolver) registerPaymentResolvers() {
 						code = "41"
 					}
 				case "cnab240_boleto":
-					if len(ctx.CurrentPayment.Barcode) >= 3 && ctx.CurrentPayment.Barcode[0:3] == "341" {
+					bc := normalizeBarcode(ctx.CurrentPayment)
+					if len(bc) >= 3 && bc[0:3] == ctx.Company.BankCode {
 						code = "30"
 					} else {
 						code = "31"
@@ -117,6 +127,17 @@ func (r *Resolver) registerPaymentResolvers() {
 
 			// Força regras de titularidade/banco para transferências
 			if ctx.TemplateName == "cnab240_transferencia" {
+				// Santander (033) usa Forma de Lançamento da Nota G002:
+				// 01=Crédito CC, 05=Poupança, 03=TED (outros bancos). Não há 41/43.
+				if ctx.Company.BankCode == "033" {
+					if ctx.CurrentPayment.RecipientBank == ctx.Company.BankCode {
+						if ctx.CurrentPayment.AccountType == "02" {
+							return "05"
+						}
+						return "01"
+					}
+					return "03"
+				}
 				if ctx.CurrentPayment.RecipientBank == ctx.Company.BankCode {
 					return "01"
 				}
@@ -127,7 +148,8 @@ func (r *Resolver) registerPaymentResolvers() {
 
 			// Força regra do banco do código de barras para boletos
 			if ctx.TemplateName == "cnab240_boleto" {
-				if len(ctx.CurrentPayment.Barcode) >= 3 && ctx.CurrentPayment.Barcode[0:3] == "341" {
+				bc := normalizeBarcode(ctx.CurrentPayment)
+				if len(bc) >= 3 && bc[0:3] == ctx.Company.BankCode {
 					return "30"
 				}
 				return "31"
@@ -142,6 +164,10 @@ func (r *Resolver) registerPaymentResolvers() {
 	r.resolvers["payment.camara"] = func(ctx *Context, format string) string {
 		if ctx.CurrentPayment != nil && ctx.CurrentPayment.RecipientBank == ctx.Company.BankCode {
 			return "000"
+		}
+		// Santander PIX = 009
+		if ctx.TemplateName == "cnab240_pix_conta" && ctx.Company.BankCode == "033" {
+			return "009"
 		}
 		return "018"
 	}
@@ -203,7 +229,7 @@ func (r *Resolver) registerPaymentResolvers() {
 				raw = interfaceToString(val)
 			}
 		}
-		return resolvePixKeyType(raw, ctx.CurrentPayment.RecipientPixKey)
+		return resolvePixKeyType(raw, ctx.CurrentPayment.RecipientPixKey, ctx.Company.BankCode)
 	}
 	r.resolvers["payment.tax_type"] = paymentResolver(func(p *types.PaymentData) string {
 		return p.TaxType
@@ -225,11 +251,29 @@ func (r *Resolver) registerPaymentResolvers() {
 		// Auto-build baseado no tax_type e nos dados estruturados no metadata
 		switch strings.ToUpper(ctx.CurrentPayment.TaxType) {
 		case "DARF":
+			if ctx.Company.BankCode == "033" {
+				return buildDARFSantander(md, ctx.CurrentPayment)
+			}
 			return buildDARFNormalFromMetadata(md, ctx.CurrentPayment)
 		case "DARF_SIMPLES":
 			return buildDARFSimplesFromMetadata(md, ctx.CurrentPayment)
 		case "GPS":
+			if ctx.Company.BankCode == "033" {
+				return buildGPSSantander(md, ctx.CurrentPayment)
+			}
 			return buildGPSFromMetadata(md, ctx.CurrentPayment)
+		case "IPVA":
+			if ctx.Company.BankCode == "033" {
+				return buildIPVASantander(md, ctx.CurrentPayment)
+			}
+		case "DPVAT":
+			if ctx.Company.BankCode == "033" {
+				return buildDPVATSantander(md, ctx.CurrentPayment)
+			}
+		case "LICENCIAMENTO":
+			if ctx.Company.BankCode == "033" {
+				return buildLicenciamentoSantander(md, ctx.CurrentPayment)
+			}
 		}
 		return ""
 	}
@@ -240,10 +284,10 @@ func (r *Resolver) registerPaymentResolvers() {
 // quanto nomes textuais (case-insensitive) para melhor UX da API.
 //
 // Mapeamento Itaú: 01=Telefone, 02=Email, 03=CPF/CNPJ, 04=Chave Aleatória
-func resolvePixKeyType(raw, pixKey string) string {
+func resolvePixKeyType(raw, pixKey, bankCode string) string {
 	normalized := strings.ToUpper(strings.TrimSpace(raw))
 
-	// 1. Nomes textuais → código Itaú (prioridade máxima, nunca ambíguos)
+	// 1. Nomes textuais
 	switch normalized {
 	case "TELEFONE", "PHONE":
 		return "01"
@@ -253,10 +297,20 @@ func resolvePixKeyType(raw, pixKey string) string {
 		return "03"
 	case "CHAVE_ALEATORIA", "CHAVE ALEATÓRIA", "CHAVE ALEATORIA", "EVP":
 		return "04"
+	case "DADOS_BANCARIOS", "DADOS BANCÁRIOS", "DADOS BANCARIOS":
+		if bankCode == "033" {
+			return "05" // Santander
+		}
+		// Itaú não possui código específico p/ dados bancários na SISPAG, default
+		return "05"
 	}
 
-	// 2. Códigos legados do README (backwards compatibility)
-	// README antigo: 04=Celular, 05=Chave Aleatória
+	// Santander aceita 05 direto
+	if bankCode == "033" && normalized == "05" {
+		return "05"
+	}
+
+	// 2. Códigos legados do README (Itaú)
 	switch normalized {
 	case "04":
 		return "01" // Celular → Telefone
@@ -264,15 +318,34 @@ func resolvePixKeyType(raw, pixKey string) string {
 		return "04" // Chave Aleatória (EVP)
 	}
 
-	// 3. Códigos diretos do Itaú (01–04) passam adiante
+	// 3. Códigos diretos
 	switch normalized {
 	case "01", "02", "03", "04":
 		return normalized
 	}
 
-	// 4. Inferência por padrão da chave: se for um UUID (EVP), assume 04
-	if pixKey != "" && strings.Contains(pixKey, "-") {
-		return "04"
+	// 4. Inferência
+	if pixKey != "" {
+		if strings.Contains(pixKey, "@") {
+			return "02"
+		}
+		if strings.HasPrefix(pixKey, "+") {
+			return "01"
+		}
+		if strings.Contains(pixKey, "-") {
+			return "04"
+		}
+
+		onlyDigits := true
+		for _, r := range pixKey {
+			if r < '0' || r > '9' {
+				onlyDigits = false
+				break
+			}
+		}
+		if onlyDigits && (len(pixKey) == 11 || len(pixKey) == 14) {
+			return "03"
+		}
 	}
 
 	return raw
@@ -565,4 +638,197 @@ func (r *Resolver) registerBarcodeResolvers() {
 		}
 		return ""
 	}
+}
+
+// GPS Santander - posições 111-230 do Segmento N
+func buildGPSSantander(md map[string]interface{}, p *types.PaymentData) string {
+	m := metaMap(md, "gps")
+	if m == nil {
+		return ""
+	}
+	codigoReceita := defaultIfEmpty(metaString(m, "codigo_receita"), p.RevenueCode)
+	tipoIdentificacao := defaultIfEmpty(metaString(m, "tipo_identificacao"), "2")
+	identificacao := defaultIfEmpty(metaString(m, "identificacao"), p.RecipientDocument)
+	codigoTributo := "17"
+	competencia := defaultIfEmpty(metaString(m, "competencia"), p.Competence)
+	valorINSS := p.Amount
+	valorOutrasEntidades := 0.0
+	atualizMonetaria := 0.0
+
+	if v, ok := metaFloat(m, "valor_inss"); ok {
+		valorINSS = v
+	}
+	if v, ok := metaFloat(m, "valor_outras_entidades"); ok {
+		valorOutrasEntidades = v
+	}
+	if v, ok := metaFloat(m, "atualiz_monetaria"); ok {
+		atualizMonetaria = v
+	}
+
+	var b strings.Builder
+	b.Grow(120)
+	b.WriteString(formatter.PadLeftZeros(codigoReceita, 6))     // 111-116
+	b.WriteString(formatter.PadLeftZeros(tipoIdentificacao, 2)) // 117-118
+	b.WriteString(formatter.PadLeftZeros(identificacao, 14))    // 119-132
+	b.WriteString(formatter.PadRight(codigoTributo, 2))         // 133-134
+	b.WriteString(formatter.PadLeftZeros(competencia, 6))       // 135-140
+	b.WriteString(formatNum(valorINSS, 15))                     // 141-155
+	b.WriteString(formatNum(valorOutrasEntidades, 15))          // 156-170
+	b.WriteString(formatNum(atualizMonetaria, 15))              // 171-185
+	b.WriteString(strings.Repeat(" ", 45))                      // 186-230 filler
+	return b.String()
+}
+
+// DARF Normal Santander - posições 111-230 do Segmento N
+func buildDARFSantander(md map[string]interface{}, p *types.PaymentData) string {
+	m := metaMap(md, "darf_normal")
+	if m == nil {
+		return ""
+	}
+	codigoReceita := defaultIfEmpty(metaString(m, "codigo_receita"), p.RevenueCode)
+	tipoIdentificacao := defaultIfEmpty(metaString(m, "tipo_identificacao"), "2")
+	identificacao := defaultIfEmpty(metaString(m, "identificacao"), p.RecipientDocument)
+	codigoTributo := "16"
+	// competence já vem no formato DDMMAAAA (período de apuração 135-142), usa direto.
+	periodoApuracao := defaultIfEmpty(metaString(m, "periodo_apuracao"), p.Competence)
+	referencia := metaString(m, "referencia")
+	valorPrincipal := p.Amount
+	valorMulta := 0.0
+	valorJuros := 0.0
+	dataVencimento := toDDMMYYYY(p.DueDate)
+
+	if v, ok := metaFloat(m, "valor_principal"); ok {
+		valorPrincipal = v
+	}
+	if v, ok := metaFloat(m, "multa"); ok {
+		valorMulta = v
+	}
+	if v, ok := metaFloat(m, "juros_encargos"); ok {
+		valorJuros = v
+	}
+	if s := metaString(m, "data_vencimento"); s != "" {
+		dataVencimento = toDDMMYYYY(s)
+	}
+
+	var b strings.Builder
+	b.Grow(120)
+	b.WriteString(formatter.PadLeftZeros(codigoReceita, 6))     // 111-116
+	b.WriteString(formatter.PadLeftZeros(tipoIdentificacao, 2)) // 117-118
+	b.WriteString(formatter.PadLeftZeros(identificacao, 14))    // 119-132
+	b.WriteString(formatter.PadRight(codigoTributo, 2))         // 133-134
+	b.WriteString(formatter.PadLeftZeros(periodoApuracao, 8))   // 135-142
+	b.WriteString(formatter.PadLeftZeros(referencia, 17))       // 143-159
+	b.WriteString(formatNum(valorPrincipal, 15))                // 160-174
+	b.WriteString(formatNum(valorMulta, 15))                    // 175-189
+	b.WriteString(formatNum(valorJuros, 15))                    // 190-204
+	b.WriteString(formatter.PadLeftZeros(dataVencimento, 8))    // 205-212
+	b.WriteString(strings.Repeat(" ", 18))                      // 213-230 filler
+	return b.String()
+}
+
+// IPVA Santander - posições 111-230 do Segmento N
+func buildIPVASantander(md map[string]interface{}, p *types.PaymentData) string {
+	m := metaMap(md, "ipva")
+	if m == nil {
+		return ""
+	}
+	codigoReceita := metaString(m, "codigo_receita")
+	tipoIdentificacao := defaultIfEmpty(metaString(m, "tipo_identificacao"), "2")
+	identificacao := defaultIfEmpty(metaString(m, "identificacao"), p.RecipientDocument)
+	codigoTributo := "25"
+	anoBase := metaString(m, "ano_base")
+	renavam := metaString(m, "renavam")
+	uf := metaString(m, "uf")
+	municipio := metaString(m, "municipio")
+	placa := metaString(m, "placa")
+	opcaoPagamento := defaultIfEmpty(metaString(m, "opcao_pagamento"), "1")
+	novoRenavam := metaString(m, "novo_renavam")
+
+	var b strings.Builder
+	b.Grow(120)
+	b.WriteString(formatter.PadRight(codigoReceita, 6))         // 111-116
+	b.WriteString(formatter.PadLeftZeros(tipoIdentificacao, 2)) // 117-118
+	b.WriteString(formatter.PadLeftZeros(identificacao, 14))    // 119-132
+	b.WriteString(formatter.PadRight(codigoTributo, 2))         // 133-134
+	b.WriteString(formatter.PadLeftZeros(anoBase, 4))           // 135-138
+	b.WriteString(formatter.PadLeftZeros(renavam, 9))           // 139-147
+	b.WriteString(formatter.PadRight(uf, 2))                    // 148-149
+	b.WriteString(formatter.PadLeftZeros(municipio, 5))         // 150-154
+	b.WriteString(formatter.PadRight(placa, 7))                 // 155-161
+	b.WriteString(formatter.PadRight(opcaoPagamento, 1))        // 162
+	b.WriteString(formatter.PadLeftZeros(novoRenavam, 12))      // 163-174
+	b.WriteString(strings.Repeat(" ", 56))                      // 175-230 filler
+	return b.String()
+}
+
+// DPVAT Santander - posições 111-230 do Segmento N
+func buildDPVATSantander(md map[string]interface{}, p *types.PaymentData) string {
+	m := metaMap(md, "dpvat")
+	if m == nil {
+		return ""
+	}
+	codigoReceita := metaString(m, "codigo_receita")
+	tipoIdentificacao := defaultIfEmpty(metaString(m, "tipo_identificacao"), "2")
+	identificacao := defaultIfEmpty(metaString(m, "identificacao"), p.RecipientDocument)
+	codigoTributo := "27"
+	anoBase := metaString(m, "ano_base")
+	renavam := metaString(m, "renavam")
+	uf := metaString(m, "uf")
+	municipio := metaString(m, "municipio")
+	placa := metaString(m, "placa")
+	opcaoPagamento := defaultIfEmpty(metaString(m, "opcao_pagamento"), "1")
+	novoRenavam := metaString(m, "novo_renavam")
+
+	var b strings.Builder
+	b.Grow(120)
+	b.WriteString(formatter.PadRight(codigoReceita, 6))         // 111-116
+	b.WriteString(formatter.PadLeftZeros(tipoIdentificacao, 2)) // 117-118
+	b.WriteString(formatter.PadLeftZeros(identificacao, 14))    // 119-132
+	b.WriteString(formatter.PadRight(codigoTributo, 2))         // 133-134
+	b.WriteString(formatter.PadLeftZeros(anoBase, 4))           // 135-138
+	b.WriteString(formatter.PadLeftZeros(renavam, 9))           // 139-147
+	b.WriteString(formatter.PadRight(uf, 2))                    // 148-149
+	b.WriteString(formatter.PadLeftZeros(municipio, 5))         // 150-154
+	b.WriteString(formatter.PadRight(placa, 7))                 // 155-161
+	b.WriteString(formatter.PadRight(opcaoPagamento, 1))        // 162
+	b.WriteString(formatter.PadLeftZeros(novoRenavam, 12))      // 163-174
+	b.WriteString(strings.Repeat(" ", 56))                      // 175-230 filler
+	return b.String()
+}
+
+// Licenciamento Santander - posições 111-230 do Segmento N
+func buildLicenciamentoSantander(md map[string]interface{}, p *types.PaymentData) string {
+	m := metaMap(md, "licenciamento")
+	if m == nil {
+		return ""
+	}
+	codigoReceita := metaString(m, "codigo_receita")
+	tipoIdentificacao := defaultIfEmpty(metaString(m, "tipo_identificacao"), "2")
+	identificacao := defaultIfEmpty(metaString(m, "identificacao"), p.RecipientDocument)
+	codigoTributo := "26"
+	anoBase := metaString(m, "ano_base")
+	renavam := metaString(m, "renavam")
+	uf := metaString(m, "uf")
+	municipio := metaString(m, "municipio")
+	placa := metaString(m, "placa")
+	opcaoPagamento := defaultIfEmpty(metaString(m, "opcao_pagamento"), "5")
+	opcaoRetirada := defaultIfEmpty(metaString(m, "opcao_retirada"), "2")
+	novoRenavam := metaString(m, "novo_renavam")
+
+	var b strings.Builder
+	b.Grow(120)
+	b.WriteString(formatter.PadRight(codigoReceita, 6))         // 111-116
+	b.WriteString(formatter.PadLeftZeros(tipoIdentificacao, 2)) // 117-118
+	b.WriteString(formatter.PadLeftZeros(identificacao, 14))    // 119-132
+	b.WriteString(formatter.PadRight(codigoTributo, 2))         // 133-134
+	b.WriteString(formatter.PadLeftZeros(anoBase, 4))           // 135-138
+	b.WriteString(formatter.PadLeftZeros(renavam, 9))           // 139-147
+	b.WriteString(formatter.PadRight(uf, 2))                    // 148-149
+	b.WriteString(formatter.PadLeftZeros(municipio, 5))         // 150-154
+	b.WriteString(formatter.PadRight(placa, 7))                 // 155-161
+	b.WriteString(formatter.PadRight(opcaoPagamento, 1))        // 162
+	b.WriteString(formatter.PadRight(opcaoRetirada, 1))         // 163
+	b.WriteString(formatter.PadLeftZeros(novoRenavam, 12))      // 164-175
+	b.WriteString(strings.Repeat(" ", 55))                      // 176-230 filler
+	return b.String()
 }

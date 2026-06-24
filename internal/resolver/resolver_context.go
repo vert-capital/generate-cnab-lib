@@ -48,6 +48,16 @@ func (r *Resolver) registerContextResolvers() {
 		cents := int64(math.Round(outras * 100))
 		return strconv.FormatInt(cents, 10)
 	}
+	r.resolvers["context.file_sequence"] = func(ctx *Context, format string) string {
+		return "000001"
+	}
+	r.resolvers["context.total_lotes"] = func(ctx *Context, format string) string {
+		return "000001"
+	}
+	// Total de registros do arquivo INCLUINDO o próprio trailer de arquivo (padrão CNAB 240).
+	r.resolvers["context.total_file_records_inclusive"] = func(ctx *Context, format string) string {
+		return fmt.Sprintf("%06d", ctx.TotalFileRecords+1)
+	}
 	r.resolvers["context.total_val_acrescimos"] = func(ctx *Context, format string) string {
 		_, _, acrescimos, _ := calcTributeTotals(ctx.Payments)
 		cents := int64(math.Round(acrescimos * 100))

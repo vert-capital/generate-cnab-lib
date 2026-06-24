@@ -3,9 +3,9 @@ package validation
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/vert-capital/generate-cnab-lib/internal/template"
 	"github.com/vert-capital/generate-cnab-lib/types"
-	"github.com/stretchr/testify/assert"
 )
 
 // helper: cria um validator interno e chama check

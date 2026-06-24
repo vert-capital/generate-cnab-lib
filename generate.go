@@ -67,8 +67,13 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 	detailSegments := tmpl.DetailSegments
 	if templateName == "cnab240_tributos" && len(input.Payments) > 0 {
 		if code := resolver.TaxTypeToPaymentCode(strings.ToUpper(input.Payments[0].TaxType)); isTributoSemCodigoBarras(code) {
-			headerLoteKey = "header_lote_tributos_sem_codigo_barras"
-			detailSegments = []string{"n"}
+			// Só troca o header dinamicamente se o template tiver a variante específica
+			// (layout do Itaú). Templates que separam o tributo em arquivos próprios
+			// (ex: Santander) mantêm o header_lote padrão e seus detail_segments.
+			if _, ok := tmpl.Segments["header_lote_tributos_sem_codigo_barras"]; ok {
+				headerLoteKey = "header_lote_tributos_sem_codigo_barras"
+				detailSegments = []string{"n"}
+			}
 		}
 	}
 	if len(detailSegments) == 0 {
@@ -85,6 +90,9 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 	// 3. Detalhes
 
 	recordCount := 0
+	// Número Sequencial do Registro no Lote (Nota G004): inicia em 1 e incrementa
+	// a cada registro de detalhe efetivamente gerado, independente do pagamento.
+	seqInLote := 0
 	for i := range input.Payments {
 		if err := goCtx.Err(); err != nil {
 			return nil, err
@@ -100,13 +108,17 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 		for _, segCode := range detailSegments {
 			// Remove hífen para encontrar o segmento (ex: J-52 -> j52)
 			segKey := "segmento_" + strings.ReplaceAll(strings.ToLower(segCode), "-", "")
-			segment, err := generateSegment(tmpl, segKey, &detailCtx, resolv, i+1)
+			seqInLote++
+			segment, err := generateSegment(tmpl, segKey, &detailCtx, resolv, seqInLote)
 			if err != nil {
 				return nil, fmt.Errorf("erro ao gerar %s para pagamento %d: %w", segKey, i+1, err)
 			}
 			if segment != "" {
 				lines = append(lines, segment)
 				recordCount++
+			} else {
+				// Segmento opcional não gerado: devolve o número sequencial.
+				seqInLote--
 			}
 		}
 
@@ -152,7 +164,7 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 // que NÃO possuem código de barras (DARF, GPS, DARF Simples, IPTU, DARJ, GARE, IPVA, DPVAT, FGTS).
 func isTributoSemCodigoBarras(code string) bool {
 	switch code {
-	case "16", "17", "18", "19", "21", "22", "25", "27", "35":
+	case "16", "17", "18", "19", "21", "22", "25", "26", "27", "35":
 		return true
 	}
 	return false
