@@ -1,0 +1,730 @@
+{
+  "name": "cnab240_pix_conta",
+  "bank_code": "208",
+  "cnab_type": "240",
+  "file_type": "REMESSA",
+  "version": "1.0",
+  "line_length": 240,
+  "detail_segments": ["A", "B"],
+  "description": "Layout CNAB 240 Febraban V10.9 para PIX Transferência (Forma 45) por chave ou dados bancários - BTG Pactual",
+  "segments": {
+    "header_arquivo": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "208",
+        "description": "Código do Banco na Compensação - G001"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "value": "0000",
+        "description": "Lote de Serviço - Header de arquivo - G002"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "0",
+        "description": "Tipo de Registro - Header de arquivo - G003"
+      },
+      "brancos_1": {
+        "pos": [9, 17],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      },
+      "tipo_inscricao": {
+        "pos": [18, 18],
+        "type": "num",
+        "source": "company.inscription_type",
+        "description": "Tipo de Inscrição da Empresa: 1=CPF, 2=CNPJ - G005"
+      },
+      "numero_inscricao": {
+        "pos": [19, 32],
+        "type": "num",
+        "source": "company.cnpj",
+        "description": "Número de Inscrição da Empresa (CPF/CNPJ) - G006"
+      },
+      "codigo_convenio": {
+        "pos": [33, 52],
+        "type": "alfa",
+        "source": "company.covenant",
+        "description": "Código do Convênio no Banco - G007"
+      },
+      "agencia": {
+        "pos": [53, 57],
+        "type": "num",
+        "source": "company.agency",
+        "description": "Agência Mantenedora da Conta - G008"
+      },
+      "dv_agencia": {
+        "pos": [58, 58],
+        "type": "alfa",
+        "source": "company.agency_digit",
+        "description": "Dígito Verificador da Agência - G009"
+      },
+      "conta": {
+        "pos": [59, 70],
+        "type": "num",
+        "source": "company.account",
+        "description": "Número da Conta Corrente - G010"
+      },
+      "dv_conta": {
+        "pos": [71, 71],
+        "type": "alfa",
+        "source": "company.account_digit",
+        "description": "Dígito Verificador da Conta - G011"
+      },
+      "dv_agencia_conta": {
+        "pos": [72, 72],
+        "type": "alfa",
+        "description": "Dígito Verificador da Ag/Conta - G012"
+      },
+      "nome_empresa": {
+        "pos": [73, 102],
+        "type": "alfa",
+        "source": "company.name",
+        "description": "Nome da Empresa - G013"
+      },
+      "nome_banco": {
+        "pos": [103, 132],
+        "type": "alfa",
+        "value": "BANCO BTG PACTUAL",
+        "description": "Nome do Banco - G014"
+      },
+      "brancos_2": {
+        "pos": [133, 142],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      },
+      "codigo_remessa": {
+        "pos": [143, 143],
+        "type": "num",
+        "value": "1",
+        "description": "Código Remessa/Retorno: 1=Remessa, 2=Retorno - G015"
+      },
+      "data_geracao": {
+        "pos": [144, 151],
+        "type": "num",
+        "source": "context.now_date_ddmmyyyy",
+        "description": "Data de Geração do Arquivo (DDMMAAAA) - G016"
+      },
+      "hora_geracao": {
+        "pos": [152, 157],
+        "type": "num",
+        "source": "context.now_time",
+        "description": "Hora de Geração do Arquivo (HHMMSS) - G017"
+      },
+      "numero_sequencial": {
+        "pos": [158, 163],
+        "type": "num",
+        "source": "context.file_sequence",
+        "description": "Número Sequencial do Arquivo (NSA) - G018"
+      },
+      "versao_layout": {
+        "pos": [164, 166],
+        "type": "num",
+        "value": "103",
+        "description": "Número da Versão do Layout do Arquivo (Febraban V10.x) - G019"
+      },
+      "densidade": {
+        "pos": [167, 171],
+        "type": "num",
+        "value": "00000",
+        "description": "Densidade de Gravação do Arquivo - G020"
+      },
+      "reservado_banco": {
+        "pos": [172, 191],
+        "type": "alfa",
+        "description": "Para Uso Reservado do Banco - G021"
+      },
+      "reservado_empresa": {
+        "pos": [192, 211],
+        "type": "alfa",
+        "description": "Para Uso Reservado da Empresa - G022"
+      },
+      "brancos_3": {
+        "pos": [212, 240],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      }
+    },
+    "header_lote": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "208",
+        "description": "Código do Banco na Compensação - G001"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico",
+        "description": "Lote de Serviço - G002"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "1",
+        "description": "Tipo de Registro - Header de lote - G003"
+      },
+      "tipo_operacao": {
+        "pos": [9, 9],
+        "type": "alfa",
+        "value": "C",
+        "description": "Tipo de Operação: C=Crédito - G028"
+      },
+      "tipo_servico": {
+        "pos": [10, 11],
+        "type": "num",
+        "value": "20",
+        "description": "Tipo de Serviço: 20=Pagamento Fornecedor - G025"
+      },
+      "forma_lancamento": {
+        "pos": [12, 13],
+        "type": "num",
+        "value": "45",
+        "description": "Forma de Lançamento: 45=PIX Transferência - G029"
+      },
+      "versao_layout_lote": {
+        "pos": [14, 16],
+        "type": "num",
+        "value": "046",
+        "description": "Número da Versão do Layout do Lote - G030"
+      },
+      "brancos_1": {
+        "pos": [17, 17],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      },
+      "tipo_inscricao": {
+        "pos": [18, 18],
+        "type": "num",
+        "source": "company.inscription_type",
+        "description": "Tipo de Inscrição da Empresa: 1=CPF, 2=CNPJ - G005"
+      },
+      "numero_inscricao": {
+        "pos": [19, 32],
+        "type": "num",
+        "source": "company.cnpj",
+        "description": "Número de Inscrição da Empresa (CPF/CNPJ) - G006"
+      },
+      "codigo_convenio": {
+        "pos": [33, 52],
+        "type": "alfa",
+        "source": "company.covenant",
+        "description": "Código do Convênio no Banco - G007"
+      },
+      "agencia": {
+        "pos": [53, 57],
+        "type": "num",
+        "source": "company.agency",
+        "description": "Agência Mantenedora da Conta - G008"
+      },
+      "dv_agencia": {
+        "pos": [58, 58],
+        "type": "alfa",
+        "source": "company.agency_digit",
+        "description": "Dígito Verificador da Agência - G009"
+      },
+      "conta": {
+        "pos": [59, 70],
+        "type": "num",
+        "source": "company.account",
+        "description": "Número da Conta Corrente - G010"
+      },
+      "dv_conta": {
+        "pos": [71, 71],
+        "type": "alfa",
+        "source": "company.account_digit",
+        "description": "Dígito Verificador da Conta - G011"
+      },
+      "dv_agencia_conta": {
+        "pos": [72, 72],
+        "type": "alfa",
+        "description": "Dígito Verificador da Ag/Conta - G012"
+      },
+      "nome_empresa": {
+        "pos": [73, 102],
+        "type": "alfa",
+        "source": "company.name",
+        "description": "Nome da Empresa - G013"
+      },
+      "mensagem": {
+        "pos": [103, 142],
+        "type": "alfa",
+        "value": "",
+        "description": "Mensagem 1 - G031"
+      },
+      "endereco_empresa": {
+        "pos": [143, 172],
+        "type": "alfa",
+        "source": "company.address",
+        "description": "Nome do Logradouro - G032"
+      },
+      "numero_endereco": {
+        "pos": [173, 177],
+        "type": "num",
+        "source": "company.address_number",
+        "description": "Número do Local - G032"
+      },
+      "complemento_endereco": {
+        "pos": [178, 192],
+        "type": "alfa",
+        "source": "company.address_complement",
+        "description": "Complemento do Logradouro - G032"
+      },
+      "cidade": {
+        "pos": [193, 212],
+        "type": "alfa",
+        "source": "company.city",
+        "description": "Nome da Cidade - G033"
+      },
+      "cep": {
+        "pos": [213, 217],
+        "type": "num",
+        "source": "company.cep_prefix",
+        "description": "CEP - G034"
+      },
+      "complemento_cep": {
+        "pos": [218, 220],
+        "type": "alfa",
+        "source": "company.cep_suffix",
+        "description": "Complemento do CEP - G035"
+      },
+      "estado": {
+        "pos": [221, 222],
+        "type": "alfa",
+        "source": "company.state",
+        "description": "Sigla do Estado - G036"
+      },
+      "indicador_forma_pagto": {
+        "pos": [223, 224],
+        "type": "num",
+        "value": "01",
+        "description": "Indicador de Forma de Pagamento: 01=Débito em Conta Corrente - P014"
+      },
+      "brancos_2": {
+        "pos": [225, 230],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa",
+        "description": "Códigos das Ocorrências p/ Retorno - G059"
+      }
+    },
+    "segmento_a": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "208",
+        "description": "Código do Banco na Compensação - G001"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico",
+        "description": "Lote de Serviço - G002"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe - G003"
+      },
+      "numero_registro": {
+        "pos": [9, 13],
+        "type": "num",
+        "source": "context.seq_num",
+        "description": "Nº Sequencial do Registro no Lote - G038"
+      },
+      "segmento": {
+        "pos": [14, 14],
+        "type": "alfa",
+        "value": "A",
+        "description": "Código do Segmento - G039"
+      },
+      "tipo_movimento": {
+        "pos": [15, 15],
+        "type": "num",
+        "value": "0",
+        "description": "Tipo de Movimento: 0=Inclusão - G060"
+      },
+      "codigo_instrucao": {
+        "pos": [16, 17],
+        "type": "num",
+        "value": "00",
+        "description": "Código de Instrução p/ Movimento: 00=Inclusão de registro liberado - G061"
+      },
+      "camara": {
+        "pos": [18, 20],
+        "type": "num",
+        "value": "009",
+        "description": "Código da Câmara Centralizadora: 009=PIX - P001"
+      },
+      "banco_favorecido": {
+        "pos": [21, 23],
+        "type": "num",
+        "source": "payment.recipient_bank",
+        "description": "Código do Banco do Favorecido - P002"
+      },
+      "agencia_favorecido": {
+        "pos": [24, 28],
+        "type": "num",
+        "source": "payment.recipient_agency",
+        "description": "Agência do Favorecido (PIX via conta) - G008"
+      },
+      "dv_agencia_favorecido": {
+        "pos": [29, 29],
+        "type": "alfa",
+        "source": "payment.recipient_agency_digit",
+        "description": "Dígito Verificador da Agência do Favorecido - G009"
+      },
+      "conta_favorecido": {
+        "pos": [30, 41],
+        "type": "num",
+        "source": "payment.recipient_account",
+        "description": "Número da Conta do Favorecido (PIX via conta) - G010"
+      },
+      "dv_conta_favorecido": {
+        "pos": [42, 42],
+        "type": "alfa",
+        "source": "payment.recipient_account_digit",
+        "description": "Dígito Verificador da Conta do Favorecido - G011"
+      },
+      "dv_agencia_conta_favorecido": {
+        "pos": [43, 43],
+        "type": "alfa",
+        "source": "payment.recipient_agency_account_digit",
+        "description": "Dígito Verificador da Ag/Conta do Favorecido - G012"
+      },
+      "nome_favorecido": {
+        "pos": [44, 73],
+        "type": "alfa",
+        "source": "payment.recipient_name",
+        "description": "Nome do Favorecido - G013"
+      },
+      "seu_numero": {
+        "pos": [74, 93],
+        "type": "alfa",
+        "source": "payment.external_id",
+        "description": "Nº do Documento Atribuído pela Empresa (Seu Número) - G064"
+      },
+      "data_pagamento": {
+        "pos": [94, 101],
+        "type": "num",
+        "source": "payment.due_date_ddmmyyyy",
+        "description": "Data do Pagamento (DDMMAAAA) - P009"
+      },
+      "moeda": {
+        "pos": [102, 104],
+        "type": "alfa",
+        "value": "BRL",
+        "description": "Tipo da Moeda: BRL=Real - G040"
+      },
+      "quantidade_moeda": {
+        "pos": [105, 119],
+        "type": "num",
+        "value": "0",
+        "description": "Quantidade da Moeda (5 decimais) - G041"
+      },
+      "valor_pagamento": {
+        "pos": [120, 134],
+        "type": "num",
+        "source": "payment.amount",
+        "description": "Valor do Pagamento (2 decimais) - P010"
+      },
+      "nosso_numero": {
+        "pos": [135, 154],
+        "type": "alfa",
+        "source": "payment.our_number",
+        "description": "Nº do Documento Atribuído pelo Banco (Nosso Número) - G043"
+      },
+      "data_efetiva": {
+        "pos": [155, 162],
+        "type": "num",
+        "value": "0",
+        "description": "Data Real da Efetivação do Pagto (retorno) - P003"
+      },
+      "valor_efetivo": {
+        "pos": [163, 177],
+        "type": "num",
+        "value": "0",
+        "description": "Valor Real da Efetivação do Pagto (retorno) - P004"
+      },
+      "informacao_2": {
+        "pos": [178, 217],
+        "type": "alfa",
+        "source": "payment.description",
+        "description": "Informação 2 / Mensagem ao Favorecido - G031"
+      },
+      "complemento_tipo_doc": {
+        "pos": [218, 219],
+        "type": "alfa",
+        "value": "",
+        "description": "Complemento do Tipo de Serviço - P005"
+      },
+      "finalidade_ted": {
+        "pos": [220, 224],
+        "type": "alfa",
+        "value": "",
+        "description": "Código da Finalidade da TED - P011 (não se aplica a PIX)"
+      },
+      "complemento_finalidade": {
+        "pos": [225, 226],
+        "type": "alfa",
+        "value": "",
+        "description": "Complemento da Finalidade - P013 (não se aplica a PIX)"
+      },
+      "brancos_1": {
+        "pos": [227, 229],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      },
+      "aviso_favorecido": {
+        "pos": [230, 230],
+        "type": "num",
+        "value": "0",
+        "description": "Aviso ao Favorecido: 0=Não emite - P006"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa",
+        "description": "Códigos das Ocorrências p/ Retorno - G059"
+      }
+    },
+    "segmento_b": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "208",
+        "description": "Código do Banco na Compensação - G001"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico",
+        "description": "Lote de Serviço - G002"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe - G003"
+      },
+      "numero_registro": {
+        "pos": [9, 13],
+        "type": "num",
+        "source": "context.seq_num",
+        "description": "Nº Sequencial do Registro no Lote - G038"
+      },
+      "segmento": {
+        "pos": [14, 14],
+        "type": "alfa",
+        "value": "B",
+        "description": "Código do Segmento - G039"
+      },
+      "forma_iniciacao": {
+        "pos": [15, 16],
+        "type": "alfa",
+        "source": "payment.pix_key_type",
+        "description": "Forma de Iniciação PIX: 01=Telefone, 02=Email, 03=CPF/CNPJ, 04=Chave Aleatória, 05=Dados Bancários - G100"
+      },
+      "brancos_1": {
+        "pos": [17, 17],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      },
+      "tipo_inscricao_favorecido": {
+        "pos": [18, 18],
+        "type": "num",
+        "source": "payment.recipient_document_type",
+        "description": "Tipo de Inscrição do Favorecido: 1=CPF, 2=CNPJ - G005"
+      },
+      "numero_inscricao_favorecido": {
+        "pos": [19, 32],
+        "type": "num",
+        "source": "payment.recipient_document",
+        "description": "Número de Inscrição do Favorecido (CPF/CNPJ) - G006"
+      },
+      "txid": {
+        "pos": [33, 67],
+        "type": "alfa",
+        "source": "payment.txid",
+        "description": "TX ID - Identificador da transação PIX (QR Code) - G101"
+      },
+      "informacao_entre_usuarios": {
+        "pos": [68, 127],
+        "type": "alfa",
+        "source": "payment.description",
+        "description": "Informações entre usuários (mensagem ao recebedor) - G102"
+      },
+      "chave_pix": {
+        "pos": [128, 226],
+        "type": "alfa",
+        "source": "payment.recipient_pix_key",
+        "description": "Chave PIX do Favorecido (telefone, email, CPF/CNPJ ou chave aleatória) - G103"
+      },
+      "brancos_2": {
+        "pos": [227, 232],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      },
+      "codigo_ispb": {
+        "pos": [233, 240],
+        "type": "alfa",
+        "source": "payment.ispb",
+        "description": "Código ISPB do Banco Favorecido - P017"
+      }
+    },
+    "trailer_lote": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "208",
+        "description": "Código do Banco na Compensação - G001"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "source": "context.lote_servico",
+        "description": "Lote de Serviço - G002"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "5",
+        "description": "Tipo de Registro - Trailer de lote - G003"
+      },
+      "brancos_1": {
+        "pos": [9, 17],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      },
+      "quantidade_registros": {
+        "pos": [18, 23],
+        "type": "num",
+        "source": "context.record_count",
+        "description": "Quantidade de Registros do Lote - G057"
+      },
+      "soma_valores": {
+        "pos": [24, 41],
+        "type": "num",
+        "source": "context.total_amount",
+        "description": "Somatória dos Valores dos Pagamentos (2 decimais) - P007"
+      },
+      "quantidade_moeda": {
+        "pos": [42, 59],
+        "type": "num",
+        "value": "0",
+        "description": "Somatória de Quantidade de Moeda (5 decimais) - G058"
+      },
+      "numero_aviso_debito": {
+        "pos": [60, 65],
+        "type": "num",
+        "value": "0",
+        "description": "Número do Aviso de Débito - G066"
+      },
+      "brancos_2": {
+        "pos": [66, 230],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa",
+        "description": "Códigos das Ocorrências p/ Retorno - G059"
+      }
+    },
+    "trailer_arquivo": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "208",
+        "description": "Código do Banco na Compensação - G001"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "value": "9999",
+        "description": "Lote de Serviço - G002"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "9",
+        "description": "Tipo de Registro - Trailer de arquivo - G003"
+      },
+      "brancos_1": {
+        "pos": [9, 17],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      },
+      "quantidade_lotes": {
+        "pos": [18, 23],
+        "type": "num",
+        "value": "000001",
+        "description": "Quantidade de Lotes do Arquivo - G049"
+      },
+      "quantidade_registros": {
+        "pos": [24, 29],
+        "type": "num",
+        "source": "context.total_file_records_inclusive",
+        "description": "Quantidade de Registros do Arquivo (tipos 0,1,3,5,9) - G056"
+      },
+      "quantidade_contas": {
+        "pos": [30, 35],
+        "type": "num",
+        "value": "0",
+        "description": "Qtde de Contas p/ Conciliação (retorno) - G037"
+      },
+      "brancos_2": {
+        "pos": [36, 240],
+        "type": "alfa",
+        "description": "CNAB - Uso exclusivo Febraban - G004"
+      }
+    }
+  },
+  "ocorrencias": {
+    "00": "Crédito ou Débito Efetivado",
+    "BD": "Pagamento Agendado",
+    "ZK": "Pagamento Antecipado (Antecipação a Fornecedores)",
+    "H3": "Falha na Antecipação do Pagamento",
+    "PA": "PIX não Efetivado",
+    "PB": "Transação Interrompida por Erro no PSP do Recebedor",
+    "PC": "Conta Transacional Encerrada no PSP do Recebedor",
+    "PD": "Tipo Incorreto para a Conta Transacional Especificada",
+    "PE": "Tipo de Transação não Suportado/Autorizado na Conta",
+    "PF": "CPF/CNPJ do Recebedor não Consistente com Titular da Conta",
+    "PG": "CPF/CNPJ do Usuário Recebedor Incorreto",
+    "PH": "Ordem Rejeitada pelo PSP do Recebedor",
+    "PK": "QR Code Inválido ou Vencido",
+    "PM": "Chave de Pagamento ou QR Code Inválido",
+    "PN": "Chave de Pagamento ou QR Code não Informado",
+    "CE": "Pagamento Cancelado",
+    "RJ": "Registro Rejeitado",
+    "SS": "Pagamento Cancelado por Insuficiência de Saldo"
+  },
+  "input_validations": [
+    {
+      "source": "payment.recipient_name",
+      "required": true,
+      "max_length": 30
+    },
+    {
+      "source": "payment.external_id",
+      "required": true,
+      "max_length": 20
+    },
+    {
+      "source": "payment.amount",
+      "required": true
+    },
+    {
+      "source": "payment.recipient_document",
+      "required": true,
+      "max_length": 14
+    }
+  ]
+}
