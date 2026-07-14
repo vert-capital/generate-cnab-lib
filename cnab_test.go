@@ -841,3 +841,294 @@ func TestParseReturnFile_Cancelled(t *testing.T) {
 	require.Error(t, err)
 	assert.ErrorIs(t, err, context.Canceled)
 }
+
+func btgCompany() CompanyData {
+	return CompanyData{
+		CNPJ:          "12345678000195",
+		CompanyName:   "EMPRESA BTG TESTE LTDA",
+		BankCode:      "208",
+		Agency:        "0001",
+		Account:       "123456",
+		AccountDigit:  "7",
+		Address:       "RUA DA EMPRESA",
+		AddressNumber: "100",
+		City:          "SAO PAULO",
+		State:         "SP",
+		CEP:           "01001000",
+	}
+}
+
+func TestGenerate_BTG_Transferencia(t *testing.T) {
+	input := Input{
+		ExternalID: "btg-ted-batch-001",
+		BankCode:   "208",
+		Company:    btgCompany(),
+		Payments: []PaymentData{
+			{
+				ExternalID:            "PAY-TED-001",
+				RecipientDocument:     "98765432000196",
+				RecipientCompanyName:  "FORNECEDOR XYZ",
+				RecipientBank:         "341",
+				RecipientAgency:       "5678",
+				RecipientAccount:      "876543",
+				RecipientAccountDigit: "2",
+				Amount:                1500.50,
+				DueDate:               "20260730",
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_transferencia")
+	require.NoError(t, err)
+
+	lines := splitLines(result.Content)
+	assert.Len(t, lines, 6, "esperado: header arquivo, header lote, segmentos A e B, trailer lote, trailer arquivo")
+	for i, line := range lines {
+		assert.Len(t, line, 240, "linha %d deve ter 240 caracteres", i+1)
+	}
+
+	headerArquivo := lines[0]
+	assert.Equal(t, "208", headerArquivo[0:3])
+	assert.Equal(t, "BANCO BTG PACTUAL", trimRight(headerArquivo[102:132]))
+	assert.Equal(t, "103", headerArquivo[163:166])
+
+	headerLote := lines[1]
+	assert.Equal(t, "41", headerLote[11:13], "TED outra titularidade deve usar forma 41")
+
+	segmentoA := lines[2]
+	assert.Equal(t, "A", segmentoA[13:14])
+	assert.Equal(t, "018", segmentoA[17:20], "câmara TED deve ser 018")
+	assert.Equal(t, "341", segmentoA[20:23])
+
+	segmentoB := lines[3]
+	assert.Equal(t, "B", segmentoB[13:14])
+}
+
+func TestGenerate_BTG_PIXConta(t *testing.T) {
+	input := Input{
+		ExternalID: "btg-pix-batch-001",
+		BankCode:   "208",
+		Company:    btgCompany(),
+		Payments: []PaymentData{
+			{
+				ExternalID:           "PAY-PIX-001",
+				RecipientDocument:    "12345678901",
+				RecipientCompanyName: "JOSE DA SILVA",
+				RecipientBank:        "341",
+				RecipientAgency:      "5678",
+				RecipientAccount:     "876543",
+				ISPB:                 "60701190",
+				Amount:               500.75,
+				DueDate:              "20260730",
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_pix_conta")
+	require.NoError(t, err)
+
+	lines := splitLines(result.Content)
+	assert.Len(t, lines, 6)
+
+	headerLote := lines[1]
+	assert.Equal(t, "45", headerLote[11:13], "PIX deve usar forma 45")
+
+	segmentoA := lines[2]
+	assert.Equal(t, "009", segmentoA[17:20], "câmara PIX deve ser 009")
+
+	segmentoB := lines[3]
+	assert.Equal(t, "B", segmentoB[13:14])
+	assert.Equal(t, "05", segmentoB[14:16], "PIX via conta deve usar forma de iniciação 05 (dados bancários)")
+	assert.Equal(t, "60701190", segmentoB[232:240], "ISPB deve estar nas posições 233-240")
+}
+
+func TestGenerate_BTG_PIXChave(t *testing.T) {
+	input := Input{
+		ExternalID: "btg-pix-chave-001",
+		BankCode:   "208",
+		Company:    btgCompany(),
+		Payments: []PaymentData{
+			{
+				ExternalID:           "PAY-PIX-CHAVE-01",
+				RecipientDocument:    "12345678901",
+				RecipientCompanyName: "MARIA OLIVEIRA",
+				RecipientBank:        "341",
+				RecipientPixKey:      "123e4567-e89b-12d3-a456-426614174000",
+				ISPB:                 "60701190",
+				Amount:               250.00,
+				DueDate:              "20260730",
+				Metadata: map[string]interface{}{
+					"key_type": "04",
+				},
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_pix_conta")
+	require.NoError(t, err)
+
+	lines := splitLines(result.Content)
+	segmentoB := lines[3]
+	assert.Equal(t, "04", segmentoB[14:16], "BTG usa código Febraban 04=Chave Aleatória sem conversão legada")
+	assert.Equal(t, "123E4567-E89B-12D3-A456-426614174000", trimRight(segmentoB[127:226]), "chave PIX nas posições 128-226")
+}
+
+func TestGenerate_BTG_Boleto(t *testing.T) {
+	input := Input{
+		ExternalID: "btg-boleto-batch-001",
+		BankCode:   "208",
+		Company:    btgCompany(),
+		Payments: []PaymentData{
+			{
+				ExternalID:           "PAY-BOL-001",
+				RecipientDocument:    "98765432000196",
+				RecipientCompanyName: "CEDENTE BOLETO SA",
+				Barcode:              "23793143200001803602373060009004133000395390",
+				Amount:               1803.60,
+				DueDate:              "20260730",
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_boleto")
+	require.NoError(t, err)
+
+	lines := splitLines(result.Content)
+	assert.Len(t, lines, 6, "esperado: header arquivo, header lote, segmentos J e J-52, trailer lote, trailer arquivo")
+
+	headerLote := lines[1]
+	assert.Equal(t, "31", headerLote[11:13], "boleto de outro banco deve usar forma 31")
+
+	segmentoJ := lines[2]
+	assert.Equal(t, "J", segmentoJ[13:14])
+	assert.Equal(t, "23793143200001803602373060009004133000395390", segmentoJ[17:61])
+
+	segmentoJ52 := lines[3]
+	assert.Equal(t, "J", segmentoJ52[13:14])
+	assert.Equal(t, "52", segmentoJ52[17:19])
+}
+
+func TestGenerate_BTG_TributoDARF(t *testing.T) {
+	input := Input{
+		ExternalID: "btg-darf-batch-001",
+		BankCode:   "208",
+		Company:    btgCompany(),
+		Payments: []PaymentData{
+			{
+				ExternalID:           "PAY-DARF-001",
+				RecipientDocument:    "12345678000195",
+				RecipientCompanyName: "EMPRESA BTG TESTE LTDA",
+				TaxType:              "DARF",
+				RevenueCode:          "1708",
+				Competence:           "31052026",
+				Amount:               375.00,
+				DueDate:              "20260720",
+				Metadata: map[string]interface{}{
+					"darf_normal": map[string]interface{}{
+						"referencia": "12345",
+					},
+				},
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_tributos")
+	require.NoError(t, err)
+
+	lines := splitLines(result.Content)
+	assert.Len(t, lines, 5, "esperado: header arquivo, header lote, segmento N, trailer lote, trailer arquivo")
+
+	headerLote := lines[1]
+	assert.Equal(t, "16", headerLote[11:13], "DARF Normal deve usar forma 16")
+
+	segmentoN := lines[2]
+	assert.Equal(t, "N", segmentoN[13:14])
+	assert.Equal(t, "001708", segmentoN[110:116], "código da receita nas posições 111-116")
+	assert.Equal(t, "16", segmentoN[132:134], "identificador do tributo DARF nas posições 133-134")
+}
+
+func TestGenerate_BTG_TributoBarras(t *testing.T) {
+	input := Input{
+		ExternalID: "btg-tributo-barras-001",
+		BankCode:   "208",
+		Company:    btgCompany(),
+		Payments: []PaymentData{
+			{
+				ExternalID:           "PAY-TRIB-001",
+				RecipientDocument:    "98765432000196",
+				RecipientCompanyName: "CONCESSIONARIA XYZ",
+				TaxType:              "CONCESSIONARIA",
+				Barcode:              "85820000000150000123045123040123456789012345",
+				Amount:               150.00,
+				DueDate:              "20260720",
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_tributos")
+	require.NoError(t, err)
+
+	lines := splitLines(result.Content)
+	assert.Len(t, lines, 5, "esperado: header arquivo, header lote, segmento O, trailer lote, trailer arquivo")
+
+	headerLote := lines[1]
+	assert.Equal(t, "11", headerLote[11:13], "tributo com código de barras deve usar forma 11")
+
+	segmentoO := lines[2]
+	assert.Equal(t, "O", segmentoO[13:14])
+	assert.Equal(t, "85820000000150000123045123040123456789012345", segmentoO[17:61])
+}
+
+func TestParseReturnFile_BTG_Transferencia(t *testing.T) {
+	newLine := func() []byte {
+		line := make([]byte, 240)
+		for i := range line {
+			line[i] = ' '
+		}
+		return line
+	}
+
+	header := newLine()
+	copy(header[0:3], "208")
+	copy(header[7:8], "0")
+	copy(header[18:32], "12345678000195") // numero_inscricao: [19, 32]
+	copy(header[72:102], "EMPRESA BTG")   // nome_empresa: [73, 102]
+	copy(header[143:151], "30072026")     // data_geracao: [144, 151]
+
+	segA := newLine()
+	copy(segA[0:3], "208")
+	copy(segA[7:8], "3")
+	copy(segA[8:13], "00001")
+	copy(segA[13:14], "A")
+	copy(segA[43:73], "FORNECEDOR XYZ")    // nome_favorecido: [44, 73]
+	copy(segA[73:93], "PAY-TED-001")       // seu_numero: [74, 93]
+	copy(segA[154:162], "30072026")        // data_efetiva: [155, 162]
+	copy(segA[162:177], "000000000150050") // valor_efetivo: [163, 177]
+	copy(segA[230:232], "00")              // ocorrencias: [231, 240]
+
+	segZ := newLine()
+	copy(segZ[0:3], "208")
+	copy(segZ[7:8], "3")
+	copy(segZ[8:13], "00002")
+	copy(segZ[13:14], "Z")
+	copy(segZ[14:78], "AUTENTICACAO123456") // autenticacao: [15, 78]
+	copy(segZ[78:98], "PAY-TED-001")        // seu_numero: [79, 98]
+
+	trailer := newLine()
+	copy(trailer[0:3], "208")
+	copy(trailer[3:7], "9999")
+	copy(trailer[7:8], "9")
+
+	content := string(header) + "\r\n" + string(segA) + "\r\n" + string(segZ) + "\r\n" + string(trailer) + "\r\n"
+
+	result, err := ParseReturnFile(context.Background(), content, "208", "cnab240_transferencia_retorno")
+	require.NoError(t, err)
+	require.Len(t, result.Records, 1)
+
+	record := result.Records[0]
+	assert.Equal(t, "PAY-TED-001", record.YourNumber)
+	assert.Equal(t, "00", record.OccurrenceCode)
+	assert.Equal(t, "Crédito ou Débito Efetivado", record.OccurrenceDescription)
+	assert.InDelta(t, 1500.50, record.PaidAmount, 0.01)
+	assert.Equal(t, "AUTENTICACAO123456", record.SecondarySegment["autenticacao"])
+}

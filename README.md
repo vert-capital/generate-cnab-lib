@@ -12,7 +12,16 @@ go get github.com/vert-capital/generate-cnab-lib
 
 - ✅ **Geração de CNAB 240** - Cria arquivo de remessa para diversos tipos de pagamento
 - ✅ **Parse de Retorno** - Lê arquivo de retorno do banco e converte para JSON
-- ✅ **Templates validados** - Itau - Em andamento - Bradesco - Não iniciado - Santander - Não iniciado
+- ✅ **Templates validados** - Itau - Em andamento - Bradesco - Não iniciado - Santander - Não iniciado - BTG Pactual - Em validação
+
+## Bancos Suportados
+
+| Banco       | Código | Templates                                                                     | Observações                                                                                          |
+| ----------- | ------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Itaú        | 341    | pix_conta, transferencia, boleto, tributos                                     | Layout SISPAG Versão 086                                                                              |
+| Bradesco    | 237    | pix_conta, transferencia, boleto, tributos                                     | Layout MULTIPAG                                                                                       |
+| Santander   | 033    | pix_conta, transferencia, boleto, tributos, tributos_barras                    | Layout PagFor V11.7                                                                                   |
+| BTG Pactual | 208    | pix_conta, transferencia, boleto, tributos                                     | Layout Febraban V10.9. Tributos: apenas Segmento O (c/ barras, forma 11) e N2/DARF Normal (forma 16) |
 
 ## Templates Disponíveis Itau
 

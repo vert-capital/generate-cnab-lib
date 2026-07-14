@@ -150,6 +150,10 @@ func (r *Resolver) registerPaymentResolvers() {
 					return "03"
 				}
 				if ctx.CurrentPayment.RecipientBank == ctx.Company.BankCode {
+					// BTG (208): crédito em conta poupança do mesmo banco usa forma 05
+					if ctx.Company.BankCode == "208" && ctx.CurrentPayment.AccountType == "02" {
+						return "05"
+					}
 					return "01"
 				}
 				if ctx.CurrentPayment.RecipientDocument == ctx.Company.CNPJ {
@@ -471,7 +475,8 @@ func (r *Resolver) registerPaymentResolvers() {
 		// Auto-build baseado no tax_type e nos dados estruturados no metadata
 		switch strings.ToUpper(ctx.CurrentPayment.TaxType) {
 		case "DARF":
-			if ctx.Company.BankCode == "033" {
+			// Santander e BTG usam o layout Febraban do Segmento N2 (DARF Normal)
+			if ctx.Company.BankCode == "033" || ctx.Company.BankCode == "208" {
 				return buildDARFSantander(md, ctx.CurrentPayment)
 			}
 			return buildDARFNormalFromMetadata(md, ctx.CurrentPayment)
@@ -525,17 +530,25 @@ func resolvePixKeyType(raw, pixKey, bankCode string) string {
 		return "05"
 	}
 
-	// Santander aceita 05 direto
-	if bankCode == "033" && normalized == "05" {
+	// Santander e BTG (layout Febraban) aceitam 05 direto (dados bancários)
+	if (bankCode == "033" || bankCode == "208") && normalized == "05" {
 		return "05"
 	}
 
-	// 2. Códigos legados do README (Itaú)
-	switch normalized {
-	case "04":
-		return "01" // Celular → Telefone
-	case "05":
-		return "04" // Chave Aleatória (EVP)
+	// BTG: PIX via conta (sem chave e sem tipo informado) usa forma de iniciação 05 (dados bancários)
+	if bankCode == "208" && normalized == "" && pixKey == "" {
+		return "05"
+	}
+
+	// 2. Códigos legados do README (Itaú). BTG segue os códigos Febraban direto,
+	// então a conversão legada não se aplica.
+	if bankCode != "208" {
+		switch normalized {
+		case "04":
+			return "01" // Celular → Telefone
+		case "05":
+			return "04" // Chave Aleatória (EVP)
+		}
 	}
 
 	// 3. Códigos diretos
