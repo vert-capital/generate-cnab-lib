@@ -8,12 +8,12 @@ import (
 	"sync"
 )
 
-//go:embed itau/*.json santander/*.json bradesco/*.json
+//go:embed itau/*.json santander/*.json bradesco/*.json btg/*.json
 var templatesFS embed.FS
 
 const defaultLineLength = 240
 
-var bankDirs = []string{"itau", "santander", "bradesco"}
+var bankDirs = []string{"itau", "santander", "bradesco", "btg"}
 
 var loadTemplates = sync.OnceValues(func() (map[string]Config, error) {
 	result := make(map[string]Config)
