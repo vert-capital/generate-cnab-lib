@@ -12,7 +12,7 @@ go get github.com/vert-capital/generate-cnab-lib
 
 - ✅ **Geração de CNAB 240** - Cria arquivo de remessa para diversos tipos de pagamento
 - ✅ **Parse de Retorno** - Lê arquivo de retorno do banco e converte para JSON
-- ✅ **Templates validados** - Itau - Em andamento - Bradesco - Não iniciado - Santander - Não iniciado - BTG Pactual - Em validação
+- ✅ **Templates validados** - Itau - Em andamento - Bradesco - Em andamento - Santander - Em andamento - BTG Pactual - Em andamento
 
 ## Bancos Suportados
 
