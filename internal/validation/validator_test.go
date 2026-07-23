@@ -202,7 +202,9 @@ func TestValidateInput_Boleto_LinhaDigitavel47(t *testing.T) {
 	}
 }
 
-func TestValidateInput_Tributo_Barcode48Validated(t *testing.T) {
+func TestValidateInput_Tributo_BarcodeComprimentoInvalido(t *testing.T) {
+	// Comprimento inválido (nem 44 nem 48 dígitos) deve falhar. 44 é aceito
+	// (código de barras de arrecadação, convertido para 48); 48 é aceito direto.
 	input := types.Input{
 		BankCode: "341",
 		Company: types.CompanyData{
@@ -215,8 +217,8 @@ func TestValidateInput_Tributo_Barcode48Validated(t *testing.T) {
 			{
 				ExternalID:           "PAY-001",
 				RecipientCompanyName: "FAVORECIDO",
-				Barcode:              "34191790000015007501111222233334445556677777",
-				TaxType:              "DARF",
+				Barcode:              "123456789012345678901234567890", // 30 dígitos
+				TaxType:              "DARE",
 				Amount:               150.0,
 			},
 		},
@@ -228,7 +230,34 @@ func TestValidateInput_Tributo_Barcode48Validated(t *testing.T) {
 			found = true
 		}
 	}
-	assert.True(t, found, "tributo com barcode 44 chars deve falhar (requer 48)")
+	assert.True(t, found, "tributo com barcode de comprimento inválido deve falhar")
+}
+
+func TestValidateInput_Tributo_Barcode44_OK(t *testing.T) {
+	// Código de barras de arrecadação de 44 dígitos é aceito diretamente
+	// (é exatamente o que vai no campo do Segmento O).
+	input := types.Input{
+		BankCode: "341",
+		Company: types.CompanyData{
+			CNPJ:        "12345678000195",
+			CompanyName: "EMPRESA TESTE",
+			Agency:      "1234",
+			Account:     "123456",
+		},
+		Payments: []types.PaymentData{
+			{
+				ExternalID:           "PAY-001",
+				RecipientCompanyName: "FAVORECIDO",
+				Barcode:              "85820000005839801851126059015657963720260820",
+				TaxType:              "dare",
+				Amount:               583.98,
+			},
+		},
+	}
+	errs := ValidateInput(input, "cnab240_tributos")
+	for _, e := range errs {
+		assert.NotEqual(t, "payments[0].barcode", e.Field, "barcode 44 dígitos deve ser aceito")
+	}
 }
 
 func TestValidateInput_Tributo_SemBarcode_OK(t *testing.T) {
@@ -280,6 +309,65 @@ func TestValidateInput_Tributo_TaxTypeRequired(t *testing.T) {
 		}
 	}
 	assert.True(t, found, "tributo sem tax_type deve falhar")
+}
+
+func TestValidateInput_Tributo_DARE_SemBarcode_Falha(t *testing.T) {
+	// Reproduz o cenário real que o Itaú rejeitou: DARE (forma 91, tributo com
+	// código de barras) sem o campo barcode. Deve falhar na validação em vez de
+	// gerar um arquivo que o banco rejeita com FORMA X SEGMENTO INCOMPATIVEIS.
+	input := types.Input{
+		BankCode: "341",
+		Company: types.CompanyData{
+			CNPJ:        "33824597000148",
+			CompanyName: "SECURITIZADORA",
+			Agency:      "0910",
+			Account:     "14538",
+		},
+		Payments: []types.PaymentData{
+			{
+				ExternalID:           "tax-763",
+				RecipientCompanyName: "Fisco",
+				RecipientDocument:    "46377222000129",
+				TaxType:              "dare",
+				Amount:               583.98,
+				DueDate:              "20260723",
+			},
+		},
+	}
+	errs := ValidateInput(input, "cnab240_tributos")
+	found := false
+	for _, e := range errs {
+		if e.Field == "payments[0].barcode" {
+			found = true
+		}
+	}
+	assert.True(t, found, "DARE sem barcode deve falhar na validação")
+}
+
+func TestValidateInput_Tributo_DARE_ComBarcode_OK(t *testing.T) {
+	input := types.Input{
+		BankCode: "341",
+		Company: types.CompanyData{
+			CNPJ:        "33824597000148",
+			CompanyName: "SECURITIZADORA",
+			Agency:      "0910",
+			Account:     "14538",
+		},
+		Payments: []types.PaymentData{
+			{
+				ExternalID:           "tax-763",
+				RecipientCompanyName: "Fisco",
+				TaxType:              "dare",
+				Amount:               583.98,
+				DueDate:              "20260723",
+				Barcode:              "858100000005839801234567890123456789012345678901",
+			},
+		},
+	}
+	errs := ValidateInput(input, "cnab240_tributos")
+	for _, e := range errs {
+		assert.NotEqual(t, "payments[0].barcode", e.Field, "DARE com barcode 48 dígitos não deve falhar")
+	}
 }
 
 func TestValidationError_Error(t *testing.T) {

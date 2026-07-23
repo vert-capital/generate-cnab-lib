@@ -983,8 +983,8 @@
           65
         ],
         "type": "alfa",
-        "source": "payment.barcode",
-        "description": "Código de Barras (48 posições - layout SISPAG Itaú)"
+        "source": "payment.barcode_tributo",
+        "description": "Código de Barras / representação numérica (48 posições - layout SISPAG Itaú). Aceita o código de barras puro de 44 dígitos (convertido automaticamente)."
       },
       "nome_concessionaria": {
         "pos": [
@@ -1019,8 +1019,8 @@
           121
         ],
         "type": "num",
-        "description": "Quantidade de Moeda",
-        "source": "payment.metadata.quantidade_moeda"
+        "value": "0",
+        "description": "Quantidade de Moeda - zeros quando moeda=REA (Nota 19). Campo numérico não usado = zeros, nunca brancos."
       },
       "valor_a_pagar": {
         "pos": [
@@ -1505,6 +1505,86 @@
         "description": "Qtde de registros do lote",
         "source": "context.record_count"
       },
+      "total_valor_pagtos": {
+        "pos": [
+          24,
+          41
+        ],
+        "type": "num",
+        "description": "Soma do valor dos pagamentos do lote - 9(16)V9(02)",
+        "source": "context.total_amount"
+      },
+      "total_qtde_moeda": {
+        "pos": [
+          42,
+          56
+        ],
+        "type": "num",
+        "value": "0",
+        "description": "Soma da quantidade de moeda do lote - 9(07)V9(08), zeros quando moeda=REA"
+      },
+      "brancos_2": {
+        "pos": [
+          57,
+          230
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "ocorrencias": {
+        "pos": [
+          231,
+          240
+        ],
+        "type": "alfa",
+        "description": "Código das ocorrências p/ retorno"
+      }
+    },
+    "trailer_lote_tributos_sem_codigo_barras": {
+      "codigo_banco": {
+        "pos": [
+          1,
+          3
+        ],
+        "type": "num",
+        "value": "341",
+        "description": "Código do Banco na Compensação"
+      },
+      "lote_servico": {
+        "pos": [
+          4,
+          7
+        ],
+        "type": "num",
+        "description": "Lote de Serviço",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [
+          8,
+          8
+        ],
+        "type": "num",
+        "value": "5",
+        "description": "Tipo de Registro - Trailer de lote"
+      },
+      "brancos_1": {
+        "pos": [
+          9,
+          17
+        ],
+        "type": "alfa",
+        "description": "Complemento de registro"
+      },
+      "quantidade_registros": {
+        "pos": [
+          18,
+          23
+        ],
+        "type": "num",
+        "description": "Qtde de registros do lote",
+        "source": "context.record_count"
+      },
       "total_valor_principal": {
         "pos": [
           24,
@@ -1609,8 +1689,8 @@
           29
         ],
         "type": "num",
-        "source": "context.total_file_records",
-        "description": "Qtde de registros do arquivo"
+        "source": "context.total_file_records_inclusive",
+        "description": "Qtde de registros do arquivo (INCLUI o trailer de arquivo). Confirmado pelo arquivo de referência aceito: 5 registros para 5 linhas."
       },
       "brancos_2": {
         "pos": [
@@ -1642,11 +1722,6 @@
     "trailer_lote_tributos": "Possui campos extras comparado ao trailer de transferências: total_valor_principal, total_outras_entidades, total_val_acrescimos, total_valor_arrecadado"
   },
   "input_validations": [
-    {
-      "source": "payment.barcode",
-      "exact_length": 48,
-      "numeric_only": true
-    },
     {
       "source": "payment.tax_type",
       "required": true
