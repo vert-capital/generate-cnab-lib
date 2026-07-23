@@ -62,8 +62,12 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 		ctx.CurrentPayment = &input.Payments[0]
 	}
 
-	// Para tributos, escolhe dinamicamente o header e os segmentos conforme o tipo
+	// Para tributos, escolhe dinamicamente o header, os segmentos e o trailer
+	// conforme o tipo (com código de barras -> Segmento O; sem -> Segmento N).
+	// O trailer diverge: COM barras usa TOTAL VALOR PAGTOS (24-41) + TOTAL QTDE
+	// MOEDA (42-56); SEM barras usa principal/outras/acréscimos/arrecadado.
 	headerLoteKey := "header_lote"
+	trailerLoteKey := "trailer_lote"
 	detailSegments := tmpl.DetailSegments
 	if templateName == "cnab240_tributos" && len(input.Payments) > 0 {
 		if code := resolver.TaxTypeToPaymentCode(strings.ToUpper(input.Payments[0].TaxType)); isTributoSemCodigoBarras(code) {
@@ -72,6 +76,9 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 			// (ex: Santander) mantêm o header_lote padrão.
 			if _, ok := tmpl.Segments["header_lote_tributos_sem_codigo_barras"]; ok {
 				headerLoteKey = "header_lote_tributos_sem_codigo_barras"
+			}
+			if _, ok := tmpl.Segments["trailer_lote_tributos_sem_codigo_barras"]; ok {
+				trailerLoteKey = "trailer_lote_tributos_sem_codigo_barras"
 			}
 			detailSegments = []string{"n"}
 		}
@@ -129,7 +136,7 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 	totalAmount := float64(totalCents) / 100.0
 	ctx.RecordCount = recordCount + 2
 	ctx.TotalAmount = totalAmount
-	trailerLote, err := generateSegment(tmpl, "trailer_lote", ctx, resolv, 0)
+	trailerLote, err := generateSegment(tmpl, trailerLoteKey, ctx, resolv, 0)
 	if err != nil {
 		return nil, fmt.Errorf("erro ao gerar trailer lote: %w", err)
 	}
