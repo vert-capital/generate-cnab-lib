@@ -584,6 +584,9 @@ func TestTaxTypeToPaymentCode(t *testing.T) {
 		{"DARF", "16"},
 		{"GPS", "17"},
 		{"FGTS", "35"},
+		{"DARE", "91"},
+		{"DARE_SP", "91"},
+		{"GNRE", "91"},
 		{"UNKNOWN", ""},
 		{"", ""},
 	}
@@ -593,6 +596,30 @@ func TestTaxTypeToPaymentCode(t *testing.T) {
 			assert.Equal(t, tt.expected, TaxTypeToPaymentCode(tt.input))
 		})
 	}
+}
+
+func TestNormalizeArrecadacaoBarcode(t *testing.T) {
+	barcode44 := "84610000000362700060002000102000000457986595"
+	// Representação numérica de 48 dígitos (com os 4 DVs de bloco 5,1,0,9).
+	linhaDigitavel48 := "846100000005362700060001200010200000004579865959"
+
+	// 44 dígitos (código de barras): retorna como está.
+	assert.Equal(t, barcode44, normalizeArrecadacaoBarcode(barcode44))
+	assert.Equal(t, 44, len(normalizeArrecadacaoBarcode(barcode44)))
+
+	// 48 dígitos (linha digitável): remove os DVs de bloco -> 44.
+	assert.Equal(t, barcode44, normalizeArrecadacaoBarcode(linhaDigitavel48))
+	assert.Equal(t, 44, len(normalizeArrecadacaoBarcode(linhaDigitavel48)))
+
+	// Remove formatação (pontos/espaços) antes de decidir o tamanho.
+	assert.Equal(t, barcode44, normalizeArrecadacaoBarcode("84610000000 36270006000 20001020000 00457986595"))
+}
+
+func TestIsBarcodeTributo(t *testing.T) {
+	assert.True(t, IsBarcodeTributo("91"), "91=GNRE/tributos com código de barras")
+	assert.True(t, IsBarcodeTributo("13"), "13=concessionárias")
+	assert.False(t, IsBarcodeTributo("16"), "16=DARF Normal (sem barcode)")
+	assert.False(t, IsBarcodeTributo(""), "vazio")
 }
 
 func TestResolvePixKeyType(t *testing.T) {

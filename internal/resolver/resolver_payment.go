@@ -829,6 +829,15 @@ func (r *Resolver) registerBarcodeResolvers() {
 	r.resolvers["payment.barcode"] = paymentResolver(func(p *types.PaymentData) string {
 		return normalizeBarcode(p)
 	})
+	// Tributos/concessionárias com código de barras (Segmento O): normaliza para
+	// a representação numérica de 48 dígitos, convertendo o código de barras puro
+	// de 44 dígitos quando necessário (Itaú SISPAG, Anexo B).
+	r.resolvers["payment.barcode_tributo"] = paymentResolver(func(p *types.PaymentData) string {
+		if p == nil {
+			return ""
+		}
+		return normalizeArrecadacaoBarcode(p.Barcode)
+	})
 	r.resolvers["payment.barcode_bank"] = func(ctx *Context, format string) string {
 		bc := normalizeBarcode(ctx.CurrentPayment)
 		if len(bc) >= 3 {

@@ -983,8 +983,8 @@
           65
         ],
         "type": "alfa",
-        "source": "payment.barcode",
-        "description": "Código de Barras (48 posições - layout SISPAG Itaú)"
+        "source": "payment.barcode_tributo",
+        "description": "Código de Barras / representação numérica (48 posições - layout SISPAG Itaú). Aceita o código de barras puro de 44 dígitos (convertido automaticamente)."
       },
       "nome_concessionaria": {
         "pos": [
@@ -1642,11 +1642,6 @@
     "trailer_lote_tributos": "Possui campos extras comparado ao trailer de transferências: total_valor_principal, total_outras_entidades, total_val_acrescimos, total_valor_arrecadado"
   },
   "input_validations": [
-    {
-      "source": "payment.barcode",
-      "exact_length": 48,
-      "numeric_only": true
-    },
     {
       "source": "payment.tax_type",
       "required": true

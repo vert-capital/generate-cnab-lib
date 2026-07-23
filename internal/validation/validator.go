@@ -102,10 +102,32 @@ func ValidateInput(input types.Input, templateName string) []ValidationError {
 		}
 
 		// Validações declarativas do template via Resolver
-		ctx := &resolver.Context{Company: input.Company, CurrentPayment: payment}
+		ctx := &resolver.Context{Company: input.Company, CurrentPayment: payment, TemplateName: templateName}
 		for _, rule := range tmpl.InputValidations {
 			value, _ := resolv.Resolve(rule.Source, ctx, "")
 			v.check(prefix+sourceLabel(rule.Source), value, rule)
+		}
+
+		// Tributos liquidados via código de barras (forma 13/91, ex.: DARE-SP,
+		// GNRE, concessionárias) exigem o barcode: valor, código de receita e
+		// datas são derivados dele. Sem barcode o banco rejeita o lote inteiro
+		// (VALOR CALCULADO DIFERENTE, CODIGO DA RECEITA INVALIDO, etc.).
+		if templateName == "cnab240_tributos" {
+			forma, _ := resolv.Resolve("payment.payment_method", ctx, "")
+			if resolver.IsBarcodeTributo(forma) {
+				if strings.TrimSpace(payment.Barcode) == "" {
+					v.add(prefix+"barcode",
+						fmt.Sprintf("obrigatório para tributo com código de barras (forma %s, ex.: DARE/GNRE)", forma))
+				} else {
+					// O código de barras normalizado deve ter 44 dígitos. A lib
+					// aceita também a representação numérica de 48 dígitos e remove
+					// os DVs de bloco; qualquer outro comprimento é inválido.
+					normalized, _ := resolv.Resolve("payment.barcode_tributo", ctx, "")
+					v.check(prefix+"barcode", normalized, template.InputValidation{
+						ExactLength: 44, NumericOnly: true,
+					})
+				}
+			}
 		}
 	}
 

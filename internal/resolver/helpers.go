@@ -74,6 +74,39 @@ func ConvertLinhaDigitavelToBarcode(linha string) (string, error) {
 	return barcode, nil
 }
 
+// normalizeArrecadacaoBarcode retorna o CÓDIGO DE BARRAS de 44 posições que o
+// Segmento O do Itaú espera para tributos/concessionárias (Itaú SISPAG, Anexo B).
+// O banco valida o DAC e o valor a partir deste código; enviar a representação
+// numérica de 48 dígitos (com os DVs de bloco) corrompe a leitura.
+//
+// Aceita:
+//   - 44 dígitos (código de barras): retorna como está;
+//   - 48 dígitos (representação numérica / linha digitável): remove os 4 dígitos
+//     verificadores de bloco (posições 12, 24, 36 e 48), reconstruindo os 44;
+//   - qualquer outro tamanho: retorna apenas os dígitos (a validação sinaliza).
+func normalizeArrecadacaoBarcode(raw string) string {
+	digits := onlyDigits(raw)
+	switch len(digits) {
+	case 44:
+		return digits
+	case 48:
+		return digits[0:11] + digits[12:23] + digits[24:35] + digits[36:47]
+	default:
+		return digits
+	}
+}
+
+// onlyDigits remove qualquer caractere não numérico (pontos, espaços, hífens).
+func onlyDigits(s string) string {
+	var b strings.Builder
+	for _, r := range s {
+		if r >= '0' && r <= '9' {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
+
 // TaxTypeToPaymentCode converte tipo de tributo/método textual para código de forma de pagamento.
 func TaxTypeToPaymentCode(code string) string {
 	switch code {
@@ -105,6 +138,21 @@ func TaxTypeToPaymentCode(code string) string {
 		return "27"
 	case "FGTS":
 		return "35"
+	case "DARE", "DARE_SP", "GNRE", "CONCESSIONARIA", "TRIBUTO_CODIGO_BARRAS":
+		// Tributos pagos via código de barras (DARE-SP, GNRE, etc.):
+		// forma 91 (GNRE e Tributos com Código de Barras) + Segmento O.
+		return "91"
 	}
 	return ""
+}
+
+// IsBarcodeTributo indica se a forma de pagamento de tributo é liquidada via
+// código de barras (Segmento O). Nestes casos o campo barcode é obrigatório,
+// pois valor, código de receita e datas são derivados do próprio código.
+func IsBarcodeTributo(code string) bool {
+	switch code {
+	case "13", "91": // 13=Concessionárias, 91=GNRE e Tributos com Código de Barras
+		return true
+	}
+	return false
 }
