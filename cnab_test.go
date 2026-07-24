@@ -716,8 +716,8 @@ func buildSegmentoO() string {
 	copy(line[7:8], "3")
 	copy(line[8:13], "00001")
 	copy(line[13:14], "O")
-	copy(line[193:205], "PAY-TRIB-001") // numero_documento: [194, 205] (11 posições)
-	copy(line[61:91], "CONCESSIONARIA") // nome_favorecido: [62, 91]
+	copy(line[174:194], "PAY-TRIB-001") // seu_numero: [175, 194] (20 posições)
+	copy(line[65:95], "CONCESSIONARIA")  // nome_favorecido: [66, 95]
 	return string(line)
 }
 
