@@ -717,7 +717,64 @@ func buildSegmentoO() string {
 	copy(line[8:13], "00001")
 	copy(line[13:14], "O")
 	copy(line[174:194], "PAY-TRIB-001") // seu_numero: [175, 194] (20 posições)
-	copy(line[65:95], "CONCESSIONARIA")  // nome_favorecido: [66, 95]
+	copy(line[65:95], "CONCESSIONARIA") // nome_favorecido: [66, 95]
+	return string(line)
+}
+
+// TestParseReturnFile_TributoSemCodigoBarras cobre o retorno de tributo liquidado pelo
+// SEGMENTO N (DARF, GPS, DARF simples, GARE-SP), onde o "seu numero" fica nas posicoes
+// 196-215 — e nao em 175-194 como no segmento O (codigo de barras).
+//
+// As quatro variantes de N declaravam a cauda do registro inteira como brancos, entao o
+// parser nao extraia o seu_numero e quem consome o retorno nao tinha como correlacionar o
+// pagamento com a remessa. O segmento O nunca teve o problema, e por isso DARE/GNRE e
+// concessionaria (que usam codigo de barras) sempre funcionaram.
+func TestParseReturnFile_TributoSemCodigoBarras(t *testing.T) {
+	for _, tc := range []struct {
+		nome                 string
+		identificacaoTributo string
+	}{
+		{"DARF (segmento N2)", "16"},
+		{"GPS (segmento N1)", "17"},
+		{"DARF simples (segmento N3)", "18"},
+		{"GARE-SP (segmento N4)", "22"},
+	} {
+		t.Run(tc.nome, func(t *testing.T) {
+			content := strings.Join([]string{
+				buildHeaderArquivo(),
+				buildHeaderLoteTributo(),
+				buildSegmentoN(tc.identificacaoTributo),
+				buildTrailerLote(),
+				buildTrailerArquivo(),
+			}, "\r\n")
+
+			result, err := ParseReturnFile(context.Background(), content, "341", "cnab240_tributos_retorno")
+			require.NoError(t, err)
+			require.Len(t, result.Records, 1)
+
+			record := result.Records[0]
+			assert.Equal(t, "PAY-DARF-001", strings.TrimSpace(record.YourNumber),
+				"sem o seu_numero o retorno nao correlaciona com a remessa")
+			assert.Equal(t, "NN-9988", strings.TrimSpace(record.OurNumber))
+			assert.Equal(t, "00", strings.TrimSpace(record.OccurrenceCode))
+		})
+	}
+}
+
+// buildSegmentoN monta um registro de detalhe do segmento N (tributo sem codigo de barras).
+func buildSegmentoN(identificacaoTributo string) string {
+	line := make([]byte, 240)
+	for i := range line {
+		line[i] = ' '
+	}
+	copy(line[0:3], "341")
+	copy(line[7:8], "3")
+	copy(line[8:13], "00001")
+	copy(line[13:14], "N")
+	copy(line[32:34], identificacaoTributo) // identificacao_tributo: [33, 34]
+	copy(line[195:215], "PAY-DARF-001")     // seu_numero: [196, 215]
+	copy(line[215:230], "NN-9988")          // nosso_numero: [216, 230]
+	copy(line[230:240], "00")               // ocorrencias: [231, 240]
 	return string(line)
 }
 

@@ -131,7 +131,9 @@
       "data_arrecadacao": {"pos": [115, 122], "type": "num", "description": "Data arrecadação (retorno)"},
       "identificador_receita_2": {"pos": [123, 126], "type": "num"},
       "identificador_gps_2": {"pos": [127, 130], "type": "num"},
-      "brancos": {"pos": [131, 230], "type": "alfa"},
+      "brancos": {"pos": [131, 195], "type": "alfa"},
+      "seu_numero": {"pos": [196, 215], "type": "alfa", "description": "Nº documento atribuído pela empresa"},
+      "nosso_numero": {"pos": [216, 230], "type": "alfa", "description": "Nº documento atribuído pelo Banco"},
       "ocorrencias": {"pos": [231, 240], "type": "alfa", "description": "Código de ocorrências"}
     },
     "segmento_n2_darf": {
@@ -154,7 +156,9 @@
       "valor_total": {"pos": [119, 133], "type": "num", "description": "Valor total pago (retorno)"},
       "periodo_apuracao": {"pos": [134, 141], "type": "num", "description": "AAAAMM ou AAAAMMDD"},
       "data_arrecadacao": {"pos": [142, 149], "type": "num", "description": "Data arrecadação (retorno)"},
-      "brancos": {"pos": [150, 230], "type": "alfa"},
+      "brancos": {"pos": [150, 195], "type": "alfa"},
+      "seu_numero": {"pos": [196, 215], "type": "alfa", "description": "Nº documento atribuído pela empresa"},
+      "nosso_numero": {"pos": [216, 230], "type": "alfa", "description": "Nº documento atribuído pelo Banco"},
       "ocorrencias": {"pos": [231, 240], "type": "alfa", "description": "Código de ocorrências"}
     },
     "segmento_n3_darf_simples": {
@@ -179,7 +183,9 @@
       "percentual_sobre_receita": {"pos": [140, 144], "type": "num", "description": "Percentual sobre receita"},
       "periodo_apuracao": {"pos": [145, 152], "type": "num", "description": "AAAAMM ou AAAAMMDD"},
       "data_arrecadacao": {"pos": [153, 160], "type": "num", "description": "Data arrecadação (retorno)"},
-      "brancos": {"pos": [161, 230], "type": "alfa"},
+      "brancos": {"pos": [161, 195], "type": "alfa"},
+      "seu_numero": {"pos": [196, 215], "type": "alfa", "description": "Nº documento atribuído pela empresa"},
+      "nosso_numero": {"pos": [216, 230], "type": "alfa", "description": "Nº documento atribuído pelo Banco"},
       "ocorrencias": {"pos": [231, 240], "type": "alfa", "description": "Código de ocorrências"}
     },
     "segmento_n4_gare_sp": {
@@ -205,7 +211,9 @@
       "brancos_1": {"pos": [159, 165], "type": "alfa"},
       "numero_parcela_notificacao": {"pos": [166, 178], "type": "num"},
       "data_arrecadacao": {"pos": [179, 186], "type": "num", "description": "Data arrecadação (retorno)"},
-      "brancos_2": {"pos": [187, 230], "type": "alfa"},
+      "brancos_2": {"pos": [187, 195], "type": "alfa"},
+      "seu_numero": {"pos": [196, 215], "type": "alfa", "description": "Nº documento atribuído pela empresa"},
+      "nosso_numero": {"pos": [216, 230], "type": "alfa", "description": "Nº documento atribuído pelo Banco"},
       "ocorrencias": {"pos": [231, 240], "type": "alfa", "description": "Código de ocorrências"}
     },
     "segmento_w": {
