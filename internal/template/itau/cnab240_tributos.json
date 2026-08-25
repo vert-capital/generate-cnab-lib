@@ -247,8 +247,8 @@
           11
         ],
         "type": "num",
-        "value": "22",
-        "description": "22=Tributos"
+        "source": "payment.tipo_pagamento_tributo",
+        "description": "Tipo de pagamento do lote de tributos COM código de barras: 20 para guia de indicador 6/7 (módulo 10 - prefeitura/concessionária), 22 para indicador 8/9 (módulo 11 - GNRE e demais). Ver resolver.TipoPagamentoTributoItau"
       },
       "forma_pagamento": {
         "pos": [
@@ -487,8 +487,8 @@
           11
         ],
         "type": "num",
-        "value": "22",
-        "description": "22=Tributos"
+        "source": "payment.tipo_pagamento_tributo",
+        "description": "Tipo de pagamento do lote de tributos COM código de barras: 20 para guia de indicador 6/7 (módulo 10 - prefeitura/concessionária), 22 para indicador 8/9 (módulo 11 - GNRE e demais). Ver resolver.TipoPagamentoTributoItau"
       },
       "forma_pagamento": {
         "pos": [

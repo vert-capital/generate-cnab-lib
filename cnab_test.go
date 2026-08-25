@@ -717,7 +717,7 @@ func buildSegmentoO() string {
 	copy(line[8:13], "00001")
 	copy(line[13:14], "O")
 	copy(line[174:194], "PAY-TRIB-001") // seu_numero: [175, 194] (20 posições)
-	copy(line[65:95], "CONCESSIONARIA")  // nome_favorecido: [66, 95]
+	copy(line[65:95], "CONCESSIONARIA") // nome_favorecido: [66, 95]
 	return string(line)
 }
 
@@ -1306,4 +1306,128 @@ func TestParseReturnFile_Itau_PixConta_J52_NaoAbreRegistro(t *testing.T) {
 	assert.Equal(t, "88123", record.YourNumber)
 	assert.InDelta(t, 2500.00, record.PaidAmount, 0.01)
 	assert.Equal(t, "AUT-ITAU-PIX-001", record.Authentication)
+}
+
+// TestGenerate_TributoCodigoBarras_Itau reproduz a guia que o Itaú recusou
+// (MUNICIPIO DE BOITUVA, remessas de 24 e 25/08/2026) e fixa o par tipo+forma do
+// header de lote que o banco de fato pagou: 20/91 para guia de módulo 10.
+func TestGenerate_TributoCodigoBarras_Itau(t *testing.T) {
+	input := Input{
+		ExternalID: "tributo-barras-001",
+		BankCode:   "341",
+		Company: CompanyData{
+			CNPJ:         "25005683000109",
+			CompanyName:  "VERT COMPANHIA SECURITIZADORA",
+			BankCode:     "341",
+			Agency:       "0910",
+			Account:      "15584",
+			AccountDigit: "5",
+		},
+		Payments: []PaymentData{
+			{
+				ExternalID:           "74683",
+				RecipientCompanyName: "MUNICIPIO DE BOITUVA",
+				Amount:               344.97,
+				DueDate:              "20260825",
+				TaxType:              "TRIBUTO_CODIGO_BARRAS",
+				Barcode:              "81620000003449705832026092500000000150595450",
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_tributos")
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	assert.Empty(t, result.Warnings, "lote homogêneo não deve gerar aviso")
+
+	lines := splitLines(result.Content)
+	require.Len(t, lines, 5, "header arquivo, header lote, segmento O, trailer lote, trailer arquivo")
+
+	headerLote := lines[1]
+	assert.Equal(t, "20", headerLote[9:11], "guia de indicador 6 (módulo 10) exige tipo de pagamento 20")
+	assert.Equal(t, "91", headerLote[11:13], "forma de pagamento 91 (tributo com código de barras)")
+
+	segmentoO := lines[2]
+	assert.Equal(t, "O", segmentoO[13:14])
+	assert.Equal(t, input.Payments[0].Barcode, strings.TrimSpace(segmentoO[17:65]))
+}
+
+// TestGenerate_TributoCodigoBarras_Itau_Modulo11 garante que a guia de módulo 11
+// (GNRE e demais tributos com código de barras) segue no tipo 22, que é o par
+// comprovado em produção para ela.
+func TestGenerate_TributoCodigoBarras_Itau_Modulo11(t *testing.T) {
+	input := Input{
+		ExternalID: "tributo-barras-002",
+		BankCode:   "341",
+		Company: CompanyData{
+			CNPJ:         "25005683000109",
+			CompanyName:  "VERT COMPANHIA SECURITIZADORA",
+			BankCode:     "341",
+			Agency:       "0910",
+			Account:      "15584",
+			AccountDigit: "5",
+		},
+		Payments: []PaymentData{
+			{
+				ExternalID:           "PAY-GNRE-001",
+				RecipientCompanyName: "SEFAZ",
+				Amount:               150.00,
+				DueDate:              "20260825",
+				TaxType:              "GNRE",
+				Barcode:              "82800000015000123456789012345678901234567890",
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_tributos")
+	require.NoError(t, err)
+
+	headerLote := splitLines(result.Content)[1]
+	assert.Equal(t, "22", headerLote[9:11], "guia de indicador 8 (módulo 11) mantém o tipo 22")
+	assert.Equal(t, "91", headerLote[11:13])
+}
+
+// TestGenerate_TributoCodigoBarras_LoteMisto avisa quando a remessa junta guia de
+// módulo 10 com guia de módulo 11: o header sai com o tipo da primeira e o banco
+// recusa as demais.
+func TestGenerate_TributoCodigoBarras_LoteMisto(t *testing.T) {
+	input := Input{
+		ExternalID: "tributo-barras-003",
+		BankCode:   "341",
+		Company: CompanyData{
+			CNPJ:         "25005683000109",
+			CompanyName:  "VERT COMPANHIA SECURITIZADORA",
+			BankCode:     "341",
+			Agency:       "0910",
+			Account:      "15584",
+			AccountDigit: "5",
+		},
+		Payments: []PaymentData{
+			{
+				ExternalID:           "74683",
+				RecipientCompanyName: "MUNICIPIO DE BOITUVA",
+				Amount:               344.97,
+				DueDate:              "20260825",
+				TaxType:              "TRIBUTO_CODIGO_BARRAS",
+				Barcode:              "81620000003449705832026092500000000150595450",
+			},
+			{
+				ExternalID:           "PAY-GNRE-001",
+				RecipientCompanyName: "SEFAZ",
+				Amount:               150.00,
+				DueDate:              "20260825",
+				TaxType:              "GNRE",
+				Barcode:              "82800000015000123456789012345678901234567890",
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_tributos")
+	require.NoError(t, err)
+
+	headerLote := splitLines(result.Content)[1]
+	assert.Equal(t, "20", headerLote[9:11], "o header segue o primeiro pagamento")
+	require.Len(t, result.Warnings, 1)
+	assert.Contains(t, result.Warnings[0], "indicadores incompatíveis")
+	assert.Contains(t, result.Warnings[0], "PAY-GNRE-001")
 }
