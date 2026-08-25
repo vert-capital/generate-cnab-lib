@@ -101,6 +101,7 @@ type ReturnRecord struct {
 	OriginalAmount        float64           `json:"original_amount"`
 	RecipientName         string            `json:"recipient_name"`
 	RecipientDocument     string            `json:"recipient_document"`
+	Authentication        string            `json:"authentication"`
 	SegmentType           string            `json:"segment_type"`
 	PrimarySegment        map[string]string `json:"primary_segment,omitempty"`
 	SecondarySegment      map[string]string `json:"secondary_segment,omitempty"`

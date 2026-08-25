@@ -7,7 +7,8 @@
   "line_length": 240,
   "detail_segments": [
     "A",
-    "B"
+    "B",
+    "Z"
   ],
   "description": "Layout CNAB 240 para retorno de Pagamentos via PIX (Transferência) - Bradesco MULTIPAG Versão 6 - julho/2023",
   "segments": {
@@ -601,6 +602,65 @@
         "type": "num",
         "description": "Identificação do Banco no SPB (Código ISPB do Banco do Favorecido, 8 dígitos) - P015",
         "source": "payment.ispb"
+      }
+    },
+    "segmento_z": {
+      "codigo_banco": {
+        "pos": [1, 3],
+        "type": "num",
+        "value": "237",
+        "description": "Código do Banco na Compensação - G001"
+      },
+      "lote_servico": {
+        "pos": [4, 7],
+        "type": "num",
+        "description": "Lote de Serviço - G002",
+        "source": "context.lote_servico"
+      },
+      "tipo_registro": {
+        "pos": [8, 8],
+        "type": "num",
+        "value": "3",
+        "description": "Tipo de Registro - Detalhe - G003"
+      },
+      "numero_registro": {
+        "pos": [9, 13],
+        "type": "num",
+        "description": "Nº Sequencial do Registro no Lote - G038",
+        "source": "context.seq_num"
+      },
+      "segmento": {
+        "pos": [14, 14],
+        "type": "alfa",
+        "value": "Z",
+        "description": "Código do Segmento - G039"
+      },
+      "tipo_movimento": {
+        "pos": [15, 15],
+        "type": "num",
+        "description": "Tipo de Movimento - G060",
+        "source": "payment.movement_type"
+      },
+      "codigo_instrucao": {
+        "pos": [16, 17],
+        "type": "num",
+        "description": "Código de Instrução p/ Movimento - G061",
+        "source": "payment.instruction_code"
+      },
+      "autenticacao_bancaria": {
+        "pos": [18, 52],
+        "type": "alfa",
+        "description": "Autenticação Bancária - G044"
+      },
+      "brancos_1": {
+        "pos": [53, 230],
+        "type": "alfa",
+        "description": "CNAB - Uso reservado - G004"
+      },
+      "ocorrencias": {
+        "pos": [231, 240],
+        "type": "alfa",
+        "description": "Códigos das Ocorrências p/ Retorno - G059"
       }
     },
     "trailer_lote": {
