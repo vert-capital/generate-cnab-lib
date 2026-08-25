@@ -81,6 +81,25 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 				trailerLoteKey = "trailer_lote_tributos_sem_codigo_barras"
 			}
 			detailSegments = []string{"n"}
+		} else if len(input.Payments) > 1 {
+			// Lote COM código de barras: tipo e forma do header saem de payments[0],
+			// mas o Itaú valida CADA guia contra esse par. Guia de módulo 10 e de
+			// módulo 11 no mesmo lote não cabem no mesmo tipo de pagamento (ver
+			// resolver.TipoPagamentoTributoItau) — as divergentes voltam recusadas
+			// com "RJ IP - DAC do código de barras inválido". Enquanto o gerador
+			// produz um lote por chamada, quem monta a remessa precisa separá-las.
+			tipoLote := resolver.TipoPagamentoTributoItau(input.Payments[0].Barcode)
+			for i := 1; i < len(input.Payments); i++ {
+				tipoGuia := resolver.TipoPagamentoTributoItau(input.Payments[i].Barcode)
+				if tipoGuia == tipoLote {
+					continue
+				}
+				warnings = append(warnings, fmt.Sprintf(
+					"lote de tributos com guias de indicadores incompatíveis: o header sai com tipo de pagamento %s (guia do pagamento %s) e o pagamento %s exigiria %s — separe as guias em remessas distintas",
+					tipoLote, input.Payments[0].ExternalID, input.Payments[i].ExternalID, tipoGuia,
+				))
+				break
+			}
 		}
 	}
 	if len(detailSegments) == 0 {

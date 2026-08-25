@@ -838,6 +838,16 @@ func (r *Resolver) registerBarcodeResolvers() {
 		}
 		return normalizeArrecadacaoBarcode(p.Barcode)
 	})
+	// Tipo de pagamento (header de lote, 10-11) do lote de tributos COM código de
+	// barras: sai do indicador da guia, ver TipoPagamentoTributoItau. Não usa
+	// paymentResolver porque o campo não pode sair em branco — sem pagamento no
+	// contexto vale o 22 do layout.
+	r.resolvers["payment.tipo_pagamento_tributo"] = func(ctx *Context, format string) string {
+		if ctx.CurrentPayment == nil {
+			return "22"
+		}
+		return TipoPagamentoTributoItau(ctx.CurrentPayment.Barcode)
+	}
 	r.resolvers["payment.barcode_bank"] = func(ctx *Context, format string) string {
 		bc := normalizeBarcode(ctx.CurrentPayment)
 		if len(bc) >= 3 {

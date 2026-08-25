@@ -156,3 +156,49 @@ func IsBarcodeTributo(code string) bool {
 	}
 	return false
 }
+
+// ArrecadacaoIndicador devolve o indicador de valor (posição 3) do código de
+// barras de guia de arrecadação, ou "" quando o código não é de arrecadação
+// (produto != 8) ou não tem 44/48 dígitos.
+//
+// O indicador diz por qual regra o DAC geral (posição 4) foi calculado:
+// 6 e 7 = módulo 10; 8 e 9 = módulo 11.
+func ArrecadacaoIndicador(barcode string) string {
+	digits := normalizeArrecadacaoBarcode(barcode)
+	if len(digits) != 44 || digits[0] != '8' {
+		return ""
+	}
+	switch digits[2] {
+	case '6', '7', '8', '9':
+		return digits[2:3]
+	}
+	return ""
+}
+
+// TipoPagamentoTributoItau devolve o TIPO DE PAGAMENTO (header de lote, posições
+// 10-11) do lote de tributos COM código de barras no Itaú, a partir do indicador
+// da guia.
+//
+// O Itaú deriva do par tipo+forma como validar o código de barras, e as duas
+// famílias de guia não passam pelo mesmo par (todos os casos abaixo são reais,
+// conta 0910/15584-5, forma de pagamento 91):
+//
+//   - indicador 6/7 (módulo 10 — prefeitura, concessionária): TIPO 20.
+//     Sob o tipo 22 a guia volta recusada com "RJ IP - DAC do código de barras
+//     inválido", mesmo com o DAC correto em módulo 10 (MUNICIPIO DE BOITUVA,
+//     remessa de 24/08/2026). Sob o tipo 20 as mesmas guias de módulo 10 são
+//     pagas (remessa de 29/07/2026: Prefeitura do Rio, Juatuba e Boituva).
+//     Trocar a forma para 13 mantendo o tipo 22 não resolve: o lote inteiro é
+//     recusado com "IM - tipo x forma não compatível" (remessa de 25/08/2026).
+//   - indicador 8/9 (módulo 11 — GNRE e demais tributos com código de barras):
+//     TIPO 22, comprovado em produção com ocorrência 00.
+//
+// Sem código de barras de arrecadação (Segmento N, ou guia ausente) fica no 22,
+// que é o tipo de serviço de tributos do layout.
+func TipoPagamentoTributoItau(barcode string) string {
+	switch ArrecadacaoIndicador(barcode) {
+	case "6", "7":
+		return "20"
+	}
+	return "22"
+}

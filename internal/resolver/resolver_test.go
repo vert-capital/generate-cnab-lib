@@ -774,3 +774,50 @@ func TestResolveBarcode_FromLinhaDigitavel47(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "1090000045190910057314000", freeField)
 }
+
+func TestArrecadacaoIndicador(t *testing.T) {
+	// Guia real de prefeitura (MUNICIPIO DE BOITUVA): indicador 6, módulo 10.
+	assert.Equal(t, "6", ArrecadacaoIndicador("81620000003449705832026092500000000150595450"))
+	// Mesma guia na representação numérica de 48 dígitos.
+	assert.Equal(t, "6", ArrecadacaoIndicador("816200000031449705832029609250000005001505954501"))
+	// Guia de módulo 11 (indicador 8).
+	assert.Equal(t, "8", ArrecadacaoIndicador("82800000015000123456789012345678901234567890"))
+	// Boleto bancário (produto != 8) e entradas inválidas não são arrecadação.
+	assert.Equal(t, "", ArrecadacaoIndicador("34191790010104351004791020150008291070026000"))
+	assert.Equal(t, "", ArrecadacaoIndicador(""))
+	// Indicador fora de 6-9 não é código de arrecadação válido.
+	assert.Equal(t, "", ArrecadacaoIndicador("81520000003449705832026092500000000150595450"))
+}
+
+func TestTipoPagamentoTributoItau(t *testing.T) {
+	// Indicador 6/7 (módulo 10, prefeitura/concessionária): tipo 20 — é o par que
+	// o Itaú pagou (remessa de 29/07/2026). Sob o 22 volta RJ IP.
+	assert.Equal(t, "20", TipoPagamentoTributoItau("81620000003449705832026092500000000150595450"))
+	assert.Equal(t, "20", TipoPagamentoTributoItau("81640000000936648752008202603103426185030000"))
+	// Indicador 8/9 (módulo 11, GNRE e demais): mantém o 22 comprovado.
+	assert.Equal(t, "22", TipoPagamentoTributoItau("82800000015000123456789012345678901234567890"))
+	// Sem guia de arrecadação (Segmento N) fica no tipo de tributos do layout.
+	assert.Equal(t, "22", TipoPagamentoTributoItau(""))
+	assert.Equal(t, "22", TipoPagamentoTributoItau("34191790010104351004791020150008291070026000"))
+}
+
+func TestResolveTipoPagamentoTributo(t *testing.T) {
+	r := New()
+
+	ctx := &Context{CurrentPayment: &types.PaymentData{
+		Barcode: "81620000003449705832026092500000000150595450",
+	}}
+	got, err := r.Resolve("payment.tipo_pagamento_tributo", ctx, "")
+	require.NoError(t, err)
+	assert.Equal(t, "20", got)
+
+	ctx.CurrentPayment.Barcode = "82800000015000123456789012345678901234567890"
+	got, err = r.Resolve("payment.tipo_pagamento_tributo", ctx, "")
+	require.NoError(t, err)
+	assert.Equal(t, "22", got)
+
+	// Sem pagamento no contexto o campo nunca sai em branco (posições 10-11).
+	got, err = r.Resolve("payment.tipo_pagamento_tributo", &Context{}, "")
+	require.NoError(t, err)
+	assert.Equal(t, "22", got)
+}
