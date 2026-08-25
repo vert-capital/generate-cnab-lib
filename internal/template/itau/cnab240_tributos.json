@@ -52,8 +52,8 @@
           17
         ],
         "type": "num",
-        "value": "080",
-        "description": "Nº da Versão do Layout do Arquivo"
+        "value": "081",
+        "description": "Nº da Versão do Layout do Arquivo - 081 e a versao do arquivo que o Itau processou e pagou (remessa de 29/07/2026)"
       },
       "tipo_inscricao": {
         "pos": [
@@ -139,7 +139,7 @@
           132
         ],
         "type": "alfa",
-        "value": "BANCO ITAU",
+        "value": "ITAU UNIBANCO S.A.",
         "description": "Nome do Banco"
       },
       "brancos_5": {
@@ -388,7 +388,8 @@
         ],
         "type": "num",
         "description": "Número do local",
-        "source": "company.address_number"
+        "source": "company.address_number",
+        "default": "0"
       },
       "complemento": {
         "pos": [
@@ -415,7 +416,8 @@
         ],
         "type": "num",
         "description": "CEP",
-        "source": "company.cep"
+        "source": "company.cep",
+        "default": "0"
       },
       "estado": {
         "pos": [
@@ -628,7 +630,8 @@
         ],
         "type": "num",
         "description": "Número do local",
-        "source": "company.address_number"
+        "source": "company.address_number",
+        "default": "0"
       },
       "complemento": {
         "pos": [
@@ -655,7 +658,8 @@
         ],
         "type": "num",
         "description": "CEP",
-        "source": "company.cep"
+        "source": "company.cep",
+        "default": "0"
       },
       "estado": {
         "pos": [
@@ -867,7 +871,8 @@
         ],
         "type": "num",
         "description": "Número do local",
-        "source": "company.address_number"
+        "source": "company.address_number",
+        "default": "0"
       },
       "complemento": {
         "pos": [
@@ -894,7 +899,8 @@
         ],
         "type": "num",
         "description": "CEP",
-        "source": "company.cep"
+        "source": "company.cep",
+        "default": "0"
       },
       "estado": {
         "pos": [

@@ -1431,3 +1431,45 @@ func TestGenerate_TributoCodigoBarras_LoteMisto(t *testing.T) {
 	assert.Contains(t, result.Warnings[0], "indicadores incompatíveis")
 	assert.Contains(t, result.Warnings[0], "PAY-GNRE-001")
 }
+
+// TestGenerate_TributoCodigoBarras_Itau_HeaderEspelhaArquivoPago fixa os campos do
+// header que o Itaú recusou em branco ("caracter invalido") e que o arquivo pago
+// (remessa de 29/07/2026) trazia preenchidos: versão do layout 081 e os numéricos
+// do endereço do pagador com zeros quando a empresa vem sem endereço no payload.
+func TestGenerate_TributoCodigoBarras_Itau_HeaderEspelhaArquivoPago(t *testing.T) {
+	input := Input{
+		ExternalID: "tributo-barras-espelho",
+		BankCode:   "341",
+		Company: CompanyData{
+			CNPJ:         "25005683000109",
+			CompanyName:  "VERT COMPANHIA SECURITIZADORA",
+			BankCode:     "341",
+			Agency:       "0910",
+			Account:      "15584",
+			AccountDigit: "5",
+			// Sem endereço: é o que o Contas a P&R manda hoje no payload.
+		},
+		Payments: []PaymentData{{
+			ExternalID:           "74683",
+			RecipientCompanyName: "MUNICIPIO DE BOITUVA",
+			Amount:               344.97,
+			DueDate:              "20260825",
+			TaxType:              "TRIBUTO_CODIGO_BARRAS",
+			Barcode:              "81620000003449705832026092500000000150595450",
+		}},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_tributos")
+	require.NoError(t, err)
+
+	lines := splitLines(result.Content)
+	headerArquivo, headerLote := lines[0], lines[1]
+
+	assert.Equal(t, "081", headerArquivo[14:17], "versão do layout do arquivo")
+	assert.Equal(t, "ITAU UNIBANCO S.A.            ", headerArquivo[102:132], "nome do banco")
+
+	assert.Equal(t, "20", headerLote[9:11], "tipo de pagamento da guia de módulo 10")
+	assert.Equal(t, "91", headerLote[11:13], "forma de pagamento")
+	assert.Equal(t, "00000", headerLote[172:177], "número do endereço: numérico nunca em branco")
+	assert.Equal(t, "00000000", headerLote[212:220], "CEP: numérico nunca em branco")
+}

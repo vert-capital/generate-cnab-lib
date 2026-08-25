@@ -52,6 +52,11 @@ type Field struct {
 	Value       string `json:"value,omitempty"`
 	Description string `json:"description,omitempty"`
 	Source      string `json:"source,omitempty"`
+	// Default e o valor usado quando o source resolve vazio. Existe para campos
+	// numericos que o banco recusa em branco (o CNAB pede numerico preenchido com
+	// zeros) sem que isso valha para todo campo vazio do layout: so quem declara
+	// default muda de comportamento.
+	Default     string `json:"default,omitempty"`
 	Format      string `json:"format,omitempty"`
 	Required    bool   `json:"required,omitempty"`
 	MinLength   int    `json:"min_length,omitempty"`
