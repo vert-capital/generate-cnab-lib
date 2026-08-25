@@ -19,6 +19,13 @@ var cnabPrimaryLetters = map[string]bool{
 	"P": true, "Q": true, "Y": true,
 }
 
+// AuthenticationFieldNames são os nomes que os templates de retorno dão ao campo de
+// autenticação bancária do segmento Z. O Bradesco chama de "autenticacao_bancaria"
+// (G044); os demais bancos chamam de "autenticacao". Toda variação de nome de banco
+// se resolve aqui — quem consome o retorno lê ReturnRecord.Authentication e não
+// precisa saber o nome do campo no arquivo.
+var AuthenticationFieldNames = []string{"autenticacao", "autenticacao_bancaria", "autenticacao_eletronica"}
+
 // canonicalStringFields mapeia nomes de campo candidatos do template para o campo
 // correspondente em ReturnRecord. O primeiro candidato não-vazio vence.
 // - PaymentDate recebe data_efetiva (data real) ou data_pagamento quando não há data real.
@@ -39,6 +46,7 @@ var canonicalStringFields = []struct {
 	{[]string{"data_pagamento"}, func(r *types.ReturnRecord, v string) { r.ScheduledDate = v }},
 	{[]string{"nome_favorecido", "nome_concessionaria"}, func(r *types.ReturnRecord, v string) { r.RecipientName = v }},
 	{[]string{"numero_inscricao", "numero_inscricao_favorecido"}, func(r *types.ReturnRecord, v string) { r.RecipientDocument = v }},
+	{AuthenticationFieldNames, func(r *types.ReturnRecord, v string) { r.Authentication = v }},
 }
 
 // canonicalCurrencyFields mapeia campos monetários com as mesmas regras.
@@ -48,6 +56,12 @@ var canonicalCurrencyFields = []struct {
 }{
 	{[]string{"valor_efetivo", "valor_pago", "valor_pagamento"}, func(r *types.ReturnRecord, v float64) { r.PaidAmount = v }},
 	{[]string{"valor_titulo", "valor_a_pagar", "valor_pagamento"}, func(r *types.ReturnRecord, v float64) { r.OriginalAmount = v }},
+}
+
+// isSegmentoJ52 identifica o registro opcional J-52 do boleto: mesma letra 'J' do
+// segmento principal, distinguido pelo identificador "52" nas posicoes 18-19.
+func isSegmentoJ52(line string) bool {
+	return len(line) >= 19 && line[13:14] == "J" && line[17:19] == "52"
 }
 
 // buildSegmentIndex varre todos os segmentos do template e constrói um mapa
@@ -93,6 +107,24 @@ func buildSegmentIndex(tmpl template.Config) map[string]string {
 		}
 	}
 	return index
+}
+
+// mergeFields acumula os campos de vários segmentos secundários no mesmo mapa.
+// Chaves comuns a todos os segmentos (codigo_banco, segmento, ...) são sobrescritas
+// pelo segmento mais recente, mas um valor vazio nunca apaga um valor já preenchido —
+// é isso que impede um segmento opcional depois do Z de zerar a autenticação.
+func mergeFields(dst *map[string]string, fields map[string]string) {
+	if *dst == nil {
+		*dst = make(map[string]string, len(fields))
+	}
+	for k, v := range fields {
+		if v == "" {
+			if _, exists := (*dst)[k]; exists {
+				continue
+			}
+		}
+		(*dst)[k] = v
+	}
 }
 
 // applyCanonicalFields popula os campos tipados do ReturnRecord a partir do mapa
@@ -164,6 +196,14 @@ func Parse(ctx context.Context, content string, bankCode, templateName string) (
 				continue
 			}
 			segmento := line[13:14]
+			if isSegmentoJ52(line) {
+				// Registro opcional do boleto (dados do sacador/sacado). Repete a letra
+				// 'J' do segmento principal, mas nao e um pagamento: tratado como
+				// registro proprio, ele empurrava o segmento Z seguinte (autenticacao
+				// bancaria) para um registro fantasma e o pagamento real ficava sem
+				// autenticacao. Nada no retorno depende do conteudo dele.
+				continue
+			}
 			segKey, ok := segmentIndex[segmento]
 			if !ok {
 				continue
@@ -176,7 +216,10 @@ func Parse(ctx context.Context, content string, bankCode, templateName string) (
 				returnFile.Records = append(returnFile.Records, record)
 				recordIndex = len(returnFile.Records) - 1
 			} else if recordIndex >= 0 {
-				returnFile.Records[recordIndex].SecondarySegment = fields
+				// Mescla: um registro pode ter vários segmentos secundários (B, C, Z...).
+				// Sobrescrever fazia o último vencer, e a autenticação do segmento Z só
+				// sobrevivia porque hoje o Z é a última linha do registro.
+				mergeFields(&returnFile.Records[recordIndex].SecondarySegment, fields)
 				applyCanonicalFields(&returnFile.Records[recordIndex], fields, tmpl)
 			}
 

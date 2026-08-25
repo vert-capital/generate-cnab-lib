@@ -1132,3 +1132,178 @@ func TestParseReturnFile_BTG_Transferencia(t *testing.T) {
 	assert.InDelta(t, 1500.50, record.PaidAmount, 0.01)
 	assert.Equal(t, "AUTENTICACAO123456", record.SecondarySegment["autenticacao"])
 }
+
+// O retorno de boleto do Itaú repete a letra 'J' no registro opcional J-52 (identificado
+// por "52" nas posições 18-19). Sem distinguir os dois, o parser abre um registro novo
+// para o J-52 e o segmento Z seguinte — que carrega a autenticação bancária — gruda no
+// registro fantasma em vez do pagamento.
+func TestParseReturnFile_Itau_Boleto_J52_NaoAbreRegistro(t *testing.T) {
+	newLine := func() []byte {
+		line := make([]byte, 240)
+		for i := range line {
+			line[i] = ' '
+		}
+		return line
+	}
+
+	header := newLine()
+	copy(header[0:3], "341")
+	copy(header[7:8], "0")
+	copy(header[18:32], "12345678000195")
+	copy(header[143:151], "13082026")
+
+	segJ := newLine()
+	copy(segJ[0:3], "341")
+	copy(segJ[7:8], "3")
+	copy(segJ[8:13], "00001")
+	copy(segJ[13:14], "J")
+	copy(segJ[14:17], "000")               // tipo_movimento: [15, 17]
+	copy(segJ[61:91], "FORNECEDOR XYZ")    // nome_favorecido: [62, 91]
+	copy(segJ[144:152], "13082026")        // data_pagamento: [145, 152]
+	copy(segJ[152:167], "000000000833319") // valor_pagamento: [153, 167]
+	copy(segJ[182:202], "74005")           // referencia: [183, 202]
+	copy(segJ[224:232], "00")              // ocorrencias: [225, 232]
+
+	segJ52 := newLine()
+	copy(segJ52[0:3], "341")
+	copy(segJ52[7:8], "3")
+	copy(segJ52[8:13], "00002")
+	copy(segJ52[13:14], "J")
+	copy(segJ52[14:17], "000")
+	copy(segJ52[17:19], "52") // codigo_registro: [18, 19] — marca o registro opcional
+	copy(segJ52[19:20], "2")
+	copy(segJ52[20:34], "98765432000199")
+
+	segZ := newLine()
+	copy(segZ[0:3], "341")
+	copy(segZ[7:8], "3")
+	copy(segZ[8:13], "00003")
+	copy(segZ[13:14], "Z")
+	copy(segZ[14:78], "AUT-ITAU-BOLETO-001") // autenticacao: [15, 78]
+
+	trailer := newLine()
+	copy(trailer[0:3], "341")
+	copy(trailer[3:7], "9999")
+	copy(trailer[7:8], "9")
+
+	content := string(header) + "\r\n" + string(segJ) + "\r\n" + string(segJ52) + "\r\n" +
+		string(segZ) + "\r\n" + string(trailer) + "\r\n"
+
+	result, err := ParseReturnFile(context.Background(), content, "341", "cnab240_boleto_retorno")
+	require.NoError(t, err)
+	require.Len(t, result.Records, 1, "J-52 é complemento do J, não um pagamento novo")
+
+	record := result.Records[0]
+	assert.Equal(t, "74005", record.YourNumber)
+	assert.InDelta(t, 8333.19, record.PaidAmount, 0.01)
+	assert.Equal(t, "AUT-ITAU-BOLETO-001", record.SecondarySegment["autenticacao"])
+	assert.Equal(t, "AUT-ITAU-BOLETO-001", record.Authentication)
+}
+
+// A autenticação vinha sobrevivendo por acidente: o segmento Z é hoje a última linha do
+// registro, e cada segmento secundário sobrescrevia o anterior. Um segmento opcional
+// depois do Z zerava o hash sem erro nenhum. Hoje duas coisas seguram isso: o campo
+// canônico Authentication (só é sobrescrito por valor não-vazio) e o merge do mapa cru.
+func TestParseReturnFile_AutenticacaoSobreviveASegmentoDepoisDoZ(t *testing.T) {
+	newLine := func() []byte {
+		line := make([]byte, 240)
+		for i := range line {
+			line[i] = ' '
+		}
+		return line
+	}
+
+	header := newLine()
+	copy(header[0:3], "341")
+	copy(header[7:8], "0")
+
+	segJ := newLine()
+	copy(segJ[0:3], "341")
+	copy(segJ[7:8], "3")
+	copy(segJ[13:14], "J")
+	copy(segJ[152:167], "000000000833319")
+	copy(segJ[182:202], "74005")
+	copy(segJ[224:232], "00")
+
+	segZ := newLine()
+	copy(segZ[0:3], "341")
+	copy(segZ[7:8], "3")
+	copy(segZ[13:14], "Z")
+	copy(segZ[14:78], "AUT-ITAU-BOLETO-002")
+
+	// Segmento opcional depois do Z, como alguns bancos mandam.
+	segC := newLine()
+	copy(segC[0:3], "341")
+	copy(segC[7:8], "3")
+	copy(segC[13:14], "C")
+
+	trailer := newLine()
+	copy(trailer[0:3], "341")
+	copy(trailer[7:8], "9")
+
+	content := string(header) + "\r\n" + string(segJ) + "\r\n" + string(segZ) + "\r\n" +
+		string(segC) + "\r\n" + string(trailer) + "\r\n"
+
+	result, err := ParseReturnFile(context.Background(), content, "341", "cnab240_boleto_retorno")
+	require.NoError(t, err)
+	require.Len(t, result.Records, 1)
+
+	assert.Equal(t, "AUT-ITAU-BOLETO-002", result.Records[0].Authentication)
+	assert.Equal(t, "AUT-ITAU-BOLETO-002", result.Records[0].SecondarySegment["autenticacao"],
+		"o segmento C depois do Z não pode apagar a autenticação do mapa cru")
+}
+
+// O J-52 não é exclusivo do boleto: os templates de retorno de PIX do Itaú e do
+// Santander também o declaram, com a mesma letra 'J'. Sem tratamento, ele abria um
+// registro fantasma no meio do PIX e o segmento Z seguinte levava a autenticação junto.
+func TestParseReturnFile_Itau_PixConta_J52_NaoAbreRegistro(t *testing.T) {
+	newLine := func() []byte {
+		line := make([]byte, 240)
+		for i := range line {
+			line[i] = ' '
+		}
+		return line
+	}
+
+	header := newLine()
+	copy(header[0:3], "341")
+	copy(header[7:8], "0")
+
+	segA := newLine()
+	copy(segA[0:3], "341")
+	copy(segA[7:8], "3")
+	copy(segA[13:14], "A")
+	copy(segA[73:93], "88123")             // seu_numero: [74, 93]
+	copy(segA[93:101], "13082026")         // data_pagamento: [94, 101]
+	copy(segA[119:134], "000000000250000") // valor_pagamento: [120, 134]
+	copy(segA[230:240], "00")              // ocorrencias: [231, 240]
+
+	segJ52 := newLine()
+	copy(segJ52[0:3], "341")
+	copy(segJ52[7:8], "3")
+	copy(segJ52[13:14], "J")
+	copy(segJ52[17:19], "52")
+	copy(segJ52[210:240], "TXID-PIX-0001") // txid: [211, 240]
+
+	segZ := newLine()
+	copy(segZ[0:3], "341")
+	copy(segZ[7:8], "3")
+	copy(segZ[13:14], "Z")
+	copy(segZ[14:78], "AUT-ITAU-PIX-001") // autenticacao: [15, 78]
+
+	trailer := newLine()
+	copy(trailer[0:3], "341")
+	copy(trailer[7:8], "9")
+
+	content := string(header) + "\r\n" + string(segA) + "\r\n" + string(segJ52) + "\r\n" +
+		string(segZ) + "\r\n" + string(trailer) + "\r\n"
+
+	result, err := ParseReturnFile(context.Background(), content, "341", "cnab240_pix_conta_retorno")
+	require.NoError(t, err)
+	require.Len(t, result.Records, 1, "J-52 é complemento do A no PIX, não um pagamento novo")
+
+	record := result.Records[0]
+	assert.Equal(t, "88123", record.YourNumber)
+	assert.InDelta(t, 2500.00, record.PaidAmount, 0.01)
+	assert.Equal(t, "AUT-ITAU-PIX-001", record.Authentication)
+}

@@ -373,3 +373,44 @@ func buildTrailerArquivo() string {
 		8: "9",
 	})
 }
+
+// Muro de regressão: todo template de retorno precisa conseguir extrair a autenticação
+// bancária, senão o comprovante de pagamento sai sem a linha "Autenticação Bancária" e
+// ninguém percebe — foi assim que o retorno de boleto do Itaú ficou meses sem hash.
+// Banco ou modalidade nova que entre sem segmento Z, ou com o campo de autenticação
+// batizado de um jeito que a tabela canônica não conhece, quebra aqui.
+func TestTodoTemplateDeRetornoExtraiAutenticacao(t *testing.T) {
+	templates, err := template.Load()
+	require.NoError(t, err)
+
+	nomesConhecidos := make(map[string]bool, len(AuthenticationFieldNames))
+	for _, nome := range AuthenticationFieldNames {
+		nomesConhecidos[nome] = true
+	}
+
+	verificados := 0
+	for chave, tmpl := range templates {
+		if tmpl.FileType != "RETORNO" {
+			continue
+		}
+		verificados++
+
+		t.Run(chave, func(t *testing.T) {
+			segKey, ok := buildSegmentIndex(tmpl)["Z"]
+			require.True(t, ok, "template de retorno sem segmento Z: a autenticação bancária não tem de onde sair")
+
+			var encontrados []string
+			for campo := range tmpl.Segments[segKey].Fields {
+				if nomesConhecidos[campo] {
+					encontrados = append(encontrados, campo)
+				}
+			}
+			require.NotEmpty(t, encontrados,
+				"segmento %q não tem nenhum campo de autenticação conhecido (%v); "+
+					"acrescente o nome usado por este banco em AuthenticationFieldNames",
+				segKey, AuthenticationFieldNames)
+		})
+	}
+
+	require.NotZero(t, verificados, "nenhum template de retorno foi verificado")
+}
