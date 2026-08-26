@@ -136,6 +136,16 @@ func (r *Resolver) registerPaymentResolvers() {
 				}
 			}
 
+			// Tributos com código de barras no Itaú: a forma sai da própria guia,
+			// não do que o chamador mandou. O banco valida o par tipo x forma
+			// contra o segmento do código de barras e recusa o lote inteiro quando
+			// a combinação não existe na tabela do manual (ocorrência IM).
+			if ctx.TemplateName == "cnab240_tributos" && ctx.Company.BankCode == "341" {
+				if forma := FormaPagamentoTributoItau(ctx.CurrentPayment.Barcode); forma != "" {
+					return forma
+				}
+			}
+
 			// Força regras de titularidade/banco para transferências e PIX
 			if ctx.TemplateName == "cnab240_transferencia" || ctx.TemplateName == "cnab240_pix" {
 				// Santander (033) usa Forma de Lançamento da Nota G002:
@@ -829,10 +839,19 @@ func (r *Resolver) registerBarcodeResolvers() {
 	r.resolvers["payment.barcode"] = paymentResolver(func(p *types.PaymentData) string {
 		return normalizeBarcode(p)
 	})
-	// Tributos/concessionárias com código de barras (Segmento O): normaliza para
-	// a representação numérica de 48 dígitos, convertendo o código de barras puro
-	// de 44 dígitos quando necessário (Itaú SISPAG, Anexo B).
+	// Tributos/concessionárias com código de barras (Segmento O): o campo tem 48
+	// posições e recebe a representação numérica da guia, com os DVs de campo nas
+	// posições que o banco espera (Itaú SISPAG, Anexo B, item 2). Código de barras
+	// puro de 44 dígitos é convertido.
 	r.resolvers["payment.barcode_tributo"] = paymentResolver(func(p *types.PaymentData) string {
+		if p == nil {
+			return ""
+		}
+		return RepresentacaoNumericaArrecadacao(p.Barcode)
+	})
+	// Código de barras de 44 dígitos da mesma guia, para quem precisa do dado sem
+	// os DVs de campo (validação de tamanho, indicador, valor).
+	r.resolvers["payment.barcode_tributo_44"] = paymentResolver(func(p *types.PaymentData) string {
 		if p == nil {
 			return ""
 		}

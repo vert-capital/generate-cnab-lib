@@ -1344,16 +1344,18 @@ func TestGenerate_TributoCodigoBarras_Itau(t *testing.T) {
 	require.Len(t, lines, 5, "header arquivo, header lote, segmento O, trailer lote, trailer arquivo")
 
 	headerLote := lines[1]
-	assert.Equal(t, "20", headerLote[9:11], "guia de indicador 6 (módulo 10) exige tipo de pagamento 20")
-	assert.Equal(t, "91", headerLote[11:13], "forma de pagamento 91 (tributo com código de barras)")
+	assert.Equal(t, "22", headerLote[9:11], "guia de prefeitura é tributo: tipo 22")
+	assert.Equal(t, "19", headerLote[11:13], "forma 19 - IPTU/ISS e demais tributos municipais")
 
 	segmentoO := lines[2]
 	assert.Equal(t, "O", segmentoO[13:14])
-	assert.Equal(t, input.Payments[0].Barcode, strings.TrimSpace(segmentoO[17:65]))
+	// O campo 018-065 leva a representação numérica de 48 dígitos: o código de
+	// barras de 44 entra com os DVs de campo recompostos, sem brancos no fim.
+	assert.Equal(t, "816200000031449705832029609250000005001505954501", segmentoO[17:65])
 }
 
-// TestGenerate_TributoCodigoBarras_Itau_Modulo11 garante que a guia de módulo 11
-// (GNRE e demais tributos com código de barras) segue no tipo 22, que é o par
+// TestGenerate_TributoCodigoBarras_Itau_Modulo11 garante que a guia de GNRE
+// (segmento 5 - órgãos governamentais, módulo 11) segue no par 22 x 91, que é o
 // comprovado em produção para ela.
 func TestGenerate_TributoCodigoBarras_Itau_Modulo11(t *testing.T) {
 	input := Input{
@@ -1374,7 +1376,7 @@ func TestGenerate_TributoCodigoBarras_Itau_Modulo11(t *testing.T) {
 				Amount:               150.00,
 				DueDate:              "20260825",
 				TaxType:              "GNRE",
-				Barcode:              "82800000015000123456789012345678901234567890",
+				Barcode:              "85800000015000123456789012345678901234567890",
 			},
 		},
 	}
@@ -1383,13 +1385,13 @@ func TestGenerate_TributoCodigoBarras_Itau_Modulo11(t *testing.T) {
 	require.NoError(t, err)
 
 	headerLote := splitLines(result.Content)[1]
-	assert.Equal(t, "22", headerLote[9:11], "guia de indicador 8 (módulo 11) mantém o tipo 22")
-	assert.Equal(t, "91", headerLote[11:13])
+	assert.Equal(t, "22", headerLote[9:11], "GNRE é tributo: tipo 22")
+	assert.Equal(t, "91", headerLote[11:13], "forma 91 - GNRE e tributos com código de barras")
 }
 
-// TestGenerate_TributoCodigoBarras_LoteMisto avisa quando a remessa junta guia de
-// módulo 10 com guia de módulo 11: o header sai com o tipo da primeira e o banco
-// recusa as demais.
+// TestGenerate_TributoCodigoBarras_LoteMisto avisa quando a remessa junta guias
+// que exigem pares tipo x forma diferentes (prefeitura e GNRE): o header sai com
+// o par da primeira e o banco recusa as demais.
 func TestGenerate_TributoCodigoBarras_LoteMisto(t *testing.T) {
 	input := Input{
 		ExternalID: "tributo-barras-003",
@@ -1417,7 +1419,7 @@ func TestGenerate_TributoCodigoBarras_LoteMisto(t *testing.T) {
 				Amount:               150.00,
 				DueDate:              "20260825",
 				TaxType:              "GNRE",
-				Barcode:              "82800000015000123456789012345678901234567890",
+				Barcode:              "85800000015000123456789012345678901234567890",
 			},
 		},
 	}
@@ -1426,9 +1428,10 @@ func TestGenerate_TributoCodigoBarras_LoteMisto(t *testing.T) {
 	require.NoError(t, err)
 
 	headerLote := splitLines(result.Content)[1]
-	assert.Equal(t, "20", headerLote[9:11], "o header segue o primeiro pagamento")
+	assert.Equal(t, "22", headerLote[9:11], "o header segue o primeiro pagamento")
+	assert.Equal(t, "19", headerLote[11:13], "o header segue o primeiro pagamento")
 	require.Len(t, result.Warnings, 1)
-	assert.Contains(t, result.Warnings[0], "indicadores incompatíveis")
+	assert.Contains(t, result.Warnings[0], "guias incompatíveis")
 	assert.Contains(t, result.Warnings[0], "PAY-GNRE-001")
 }
 
@@ -1468,8 +1471,8 @@ func TestGenerate_TributoCodigoBarras_Itau_HeaderEspelhaArquivoPago(t *testing.T
 	assert.Equal(t, "081", headerArquivo[14:17], "versão do layout do arquivo")
 	assert.Equal(t, "ITAU UNIBANCO S.A.            ", headerArquivo[102:132], "nome do banco")
 
-	assert.Equal(t, "20", headerLote[9:11], "tipo de pagamento da guia de módulo 10")
-	assert.Equal(t, "91", headerLote[11:13], "forma de pagamento")
+	assert.Equal(t, "22", headerLote[9:11], "tipo de pagamento da guia de prefeitura")
+	assert.Equal(t, "19", headerLote[11:13], "forma de pagamento da guia de prefeitura")
 	assert.Equal(t, "00000", headerLote[172:177], "número do endereço: numérico nunca em branco")
 	assert.Equal(t, "00000000", headerLote[212:220], "CEP: numérico nunca em branco")
 }
