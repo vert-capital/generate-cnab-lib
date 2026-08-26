@@ -789,16 +789,64 @@ func TestArrecadacaoIndicador(t *testing.T) {
 	assert.Equal(t, "", ArrecadacaoIndicador("81520000003449705832026092500000000150595450"))
 }
 
+func TestFormaPagamentoTributoItau(t *testing.T) {
+	// Segmento 1 (prefeitura): IPTU/ISS e demais tributos municipais.
+	assert.Equal(t, "19", FormaPagamentoTributoItau("81620000003449705832026092500000000150595450"))
+	assert.Equal(t, "19", FormaPagamentoTributoItau("81640000000936648752008202603103426185030000"))
+	// Segmentos 2, 3 e 4: conta de concessionária.
+	assert.Equal(t, "13", FormaPagamentoTributoItau("82800000015000123456789012345678901234567890"))
+	assert.Equal(t, "13", FormaPagamentoTributoItau("83600000015000123456789012345678901234567890"))
+	// Demais segmentos (órgãos governamentais, carnês, multas): GNRE e tributos
+	// com código de barras.
+	assert.Equal(t, "91", FormaPagamentoTributoItau("85800000015000123456789012345678901234567890"))
+	// Guia real de GNRE que o Itaú pagou (ocorrência 00) sob o par 22 x 91,
+	// informada na representação numérica de 48 dígitos.
+	assert.Equal(t, "91", FormaPagamentoTributoItau("858000000054839801851129605901568952452202608210"))
+	assert.Equal(t, "22", TipoPagamentoTributoItau("858000000054839801851129605901568952452202608210"))
+	// Sem guia de arrecadação a forma continua vindo do payment_method.
+	assert.Equal(t, "", FormaPagamentoTributoItau(""))
+	assert.Equal(t, "", FormaPagamentoTributoItau("34191790010104351004791020150008291070026000"))
+}
+
 func TestTipoPagamentoTributoItau(t *testing.T) {
-	// Indicador 6/7 (módulo 10, prefeitura/concessionária): tipo 20 — é o par que
-	// o Itaú pagou (remessa de 29/07/2026). Sob o 22 volta RJ IP.
-	assert.Equal(t, "20", TipoPagamentoTributoItau("81620000003449705832026092500000000150595450"))
-	assert.Equal(t, "20", TipoPagamentoTributoItau("81640000000936648752008202603103426185030000"))
-	// Indicador 8/9 (módulo 11, GNRE e demais): mantém o 22 comprovado.
-	assert.Equal(t, "22", TipoPagamentoTributoItau("82800000015000123456789012345678901234567890"))
+	// Prefeitura (forma 19) e GNRE (forma 91) são tributo: tipo 22.
+	assert.Equal(t, "22", TipoPagamentoTributoItau("81620000003449705832026092500000000150595450"))
+	assert.Equal(t, "22", TipoPagamentoTributoItau("85800000015000123456789012345678901234567890"))
+	// Concessionária (forma 13) entra como fornecedor: tipo 20 — é o único par
+	// com a forma 13 na tabela do manual.
+	assert.Equal(t, "20", TipoPagamentoTributoItau("82800000015000123456789012345678901234567890"))
 	// Sem guia de arrecadação (Segmento N) fica no tipo de tributos do layout.
 	assert.Equal(t, "22", TipoPagamentoTributoItau(""))
 	assert.Equal(t, "22", TipoPagamentoTributoItau("34191790010104351004791020150008291070026000"))
+}
+
+func TestRepresentacaoNumericaArrecadacao(t *testing.T) {
+	// Exemplo do próprio manual (Itaú SISPAG, Anexo B, itens 2 e 4): o código de
+	// barras de 44 vira a representação numérica de 48 com os DVs de campo.
+	assert.Equal(t,
+		"846100000005362700060001200010200000004579865959",
+		RepresentacaoNumericaArrecadacao("84610000000362700060002000102000000457986595"))
+
+	// Guia real de IPTU (MUNICIPIO DE BOITUVA): os 48 dígitos batem com a linha
+	// digitável impressa na guia.
+	assert.Equal(t,
+		"816200000031449705832029609250000005001505954501",
+		RepresentacaoNumericaArrecadacao("81620000003449705832026092500000000150595450"))
+
+	// Já vindo com 48, o dado segue sem alteração — o manual exige que ele seja
+	// alocado "sem qualquer alteração em seu conteúdo".
+	assert.Equal(t,
+		"816200000031449705832029609250000005001505954501",
+		RepresentacaoNumericaArrecadacao("816200000031449705832029609250000005001505954501"))
+
+	// Máscara na entrada não atrapalha.
+	assert.Equal(t,
+		"816200000031449705832029609250000005001505954501",
+		RepresentacaoNumericaArrecadacao("81620000003-1 44970583202-9 60925000000-5 00150595450-1"))
+
+	// Tamanho inválido volta como veio, para a validação sinalizar.
+	assert.Equal(t, "123", RepresentacaoNumericaArrecadacao("123"))
+	assert.Equal(t, "", RepresentacaoNumericaArrecadacao(""))
 }
 
 func TestResolveTipoPagamentoTributo(t *testing.T) {
@@ -809,12 +857,12 @@ func TestResolveTipoPagamentoTributo(t *testing.T) {
 	}}
 	got, err := r.Resolve("payment.tipo_pagamento_tributo", ctx, "")
 	require.NoError(t, err)
-	assert.Equal(t, "20", got)
+	assert.Equal(t, "22", got)
 
 	ctx.CurrentPayment.Barcode = "82800000015000123456789012345678901234567890"
 	got, err = r.Resolve("payment.tipo_pagamento_tributo", ctx, "")
 	require.NoError(t, err)
-	assert.Equal(t, "22", got)
+	assert.Equal(t, "20", got)
 
 	// Sem pagamento no contexto o campo nunca sai em branco (posições 10-11).
 	got, err = r.Resolve("payment.tipo_pagamento_tributo", &Context{}, "")

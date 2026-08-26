@@ -83,20 +83,20 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 			detailSegments = []string{"n"}
 		} else if len(input.Payments) > 1 {
 			// Lote COM código de barras: tipo e forma do header saem de payments[0],
-			// mas o Itaú valida CADA guia contra esse par. Guia de módulo 10 e de
-			// módulo 11 no mesmo lote não cabem no mesmo tipo de pagamento (ver
-			// resolver.TipoPagamentoTributoItau) — as divergentes voltam recusadas
-			// com "RJ IP - DAC do código de barras inválido". Enquanto o gerador
-			// produz um lote por chamada, quem monta a remessa precisa separá-las.
-			tipoLote := resolver.TipoPagamentoTributoItau(input.Payments[0].Barcode)
+			// mas o Itaú valida CADA guia contra esse par. Guia de prefeitura,
+			// de concessionária e de órgão governamental não cabem no mesmo par
+			// (ver resolver.FormaPagamentoTributoItau) — as divergentes voltam
+			// recusadas. Enquanto o gerador produz um lote por chamada, quem monta
+			// a remessa precisa separá-las.
+			parLote := parTipoFormaTributo(input.Payments[0].Barcode)
 			for i := 1; i < len(input.Payments); i++ {
-				tipoGuia := resolver.TipoPagamentoTributoItau(input.Payments[i].Barcode)
-				if tipoGuia == tipoLote {
+				parGuia := parTipoFormaTributo(input.Payments[i].Barcode)
+				if parGuia == parLote {
 					continue
 				}
 				warnings = append(warnings, fmt.Sprintf(
-					"lote de tributos com guias de indicadores incompatíveis: o header sai com tipo de pagamento %s (guia do pagamento %s) e o pagamento %s exigiria %s — separe as guias em remessas distintas",
-					tipoLote, input.Payments[0].ExternalID, input.Payments[i].ExternalID, tipoGuia,
+					"lote de tributos com guias incompatíveis: o header sai com tipo x forma %s (guia do pagamento %s) e o pagamento %s exigiria %s — separe as guias em remessas distintas",
+					parLote, input.Payments[0].ExternalID, input.Payments[i].ExternalID, parGuia,
 				))
 				break
 			}
@@ -184,6 +184,12 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 		TotalAmount:  totalAmount,
 		Warnings:     warnings,
 	}, nil
+}
+
+// parTipoFormaTributo descreve o par tipo x forma que a guia exige no header do
+// lote, no formato "22x19". É o par que o Itaú confere contra cada guia do lote.
+func parTipoFormaTributo(barcode string) string {
+	return resolver.TipoPagamentoTributoItau(barcode) + "x" + resolver.FormaPagamentoTributoItau(barcode)
 }
 
 // isTributoSemCodigoBarras retorna true para códigos de pagamento de tributos

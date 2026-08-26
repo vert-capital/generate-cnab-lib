@@ -248,7 +248,7 @@
         ],
         "type": "num",
         "source": "payment.tipo_pagamento_tributo",
-        "description": "Tipo de pagamento do lote de tributos COM código de barras: 20 para guia de indicador 6/7 (módulo 10 - prefeitura/concessionária), 22 para indicador 8/9 (módulo 11 - GNRE e demais). Ver resolver.TipoPagamentoTributoItau"
+        "description": "Tipo de pagamento do lote de tributos COM código de barras, em par com a forma (tabela da pág. 4 do manual): 20=FORNECEDORES com a forma 13 (concessionárias), 22=TRIBUTOS com as formas 19 (prefeituras) e 91 (GNRE e demais). Ver resolver.TipoPagamentoTributoItau"
       },
       "forma_pagamento": {
         "pos": [
@@ -257,7 +257,7 @@
         ],
         "type": "num",
         "source": "payment.payment_method",
-        "description": "13=Pagamento de Concessionárias, 16=DARF Normal, 17=GPS, 18=DARF Simples, 19=IPTU/ISS, 21=DARJ, 22=GARE-SP ICMS, 25=IPVA, 27=DPVAT, 91=GNRE e Tributos com Código de Barras"
+        "description": "Forma de pagamento do lote. Com código de barras sai do segmento da guia (ver resolver.FormaPagamentoTributoItau): 19=IPTU/ISS e demais tributos municipais (segmento 1), 13=Concessionárias (segmentos 2/3/4), 91=GNRE e Tributos com Código de Barras (demais). Sem código de barras: 16=DARF Normal, 17=GPS, 18=DARF Simples, 21=DARJ, 22=GARE-SP ICMS, 25=IPVA, 27=DPVAT"
       },
       "layout_lote": {
         "pos": [
@@ -490,7 +490,7 @@
         ],
         "type": "num",
         "source": "payment.tipo_pagamento_tributo",
-        "description": "Tipo de pagamento do lote de tributos COM código de barras: 20 para guia de indicador 6/7 (módulo 10 - prefeitura/concessionária), 22 para indicador 8/9 (módulo 11 - GNRE e demais). Ver resolver.TipoPagamentoTributoItau"
+        "description": "Tipo de pagamento do lote de tributos COM código de barras, em par com a forma (tabela da pág. 4 do manual): 20=FORNECEDORES com a forma 13 (concessionárias), 22=TRIBUTOS com as formas 19 (prefeituras) e 91 (GNRE e demais). Ver resolver.TipoPagamentoTributoItau"
       },
       "forma_pagamento": {
         "pos": [
@@ -499,7 +499,7 @@
         ],
         "type": "num",
         "source": "payment.payment_method",
-        "description": "13=Pagamento de Concessionárias, 16=DARF Normal, 17=GPS, 18=DARF Simples, 19=IPTU/ISS, 21=DARJ, 22=GARE-SP ICMS, 25=IPVA, 27=DPVAT, 91=GNRE e Tributos com Código de Barras"
+        "description": "Forma de pagamento do lote. Com código de barras sai do segmento da guia (ver resolver.FormaPagamentoTributoItau): 19=IPTU/ISS e demais tributos municipais (segmento 1), 13=Concessionárias (segmentos 2/3/4), 91=GNRE e Tributos com Código de Barras (demais). Sem código de barras: 16=DARF Normal, 17=GPS, 18=DARF Simples, 21=DARJ, 22=GARE-SP ICMS, 25=IPVA, 27=DPVAT"
       },
       "layout_lote": {
         "pos": [
@@ -990,7 +990,7 @@
         ],
         "type": "alfa",
         "source": "payment.barcode_tributo",
-        "description": "Código de Barras / representação numérica (48 posições - layout SISPAG Itaú). Aceita o código de barras puro de 44 dígitos (convertido automaticamente)."
+        "description": "Representação numérica da guia (48 dígitos) nas posições 018-065: campo 1 em 018-029, campo 2 em 030-041, campo 3 em 042-053 e campo 4 em 054-065, cada um com 11 dígitos + DV (Anexo B, item 2). Código de barras puro de 44 dígitos é convertido, recompondo os DVs de campo. Gravar 44 dígitos + brancos parte o campo 4 e o banco recusa com 'caracter inválido na posição 54'."
       },
       "nome_concessionaria": {
         "pos": [

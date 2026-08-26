@@ -119,10 +119,11 @@ func ValidateInput(input types.Input, templateName string) []ValidationError {
 					v.add(prefix+"barcode",
 						fmt.Sprintf("obrigatório para tributo com código de barras (forma %s, ex.: DARE/GNRE)", forma))
 				} else {
-					// O código de barras normalizado deve ter 44 dígitos. A lib
-					// aceita também a representação numérica de 48 dígitos e remove
-					// os DVs de bloco; qualquer outro comprimento é inválido.
-					normalized, _ := resolv.Resolve("payment.barcode_tributo", ctx, "")
+					// A guia deve fechar em 44 dígitos sem os DVs de campo. A lib
+					// aceita tanto o código de barras (44) quanto a representação
+					// numérica (48); qualquer outro comprimento é inválido. No
+					// arquivo vai a representação numérica de 48 posições.
+					normalized, _ := resolv.Resolve("payment.barcode_tributo_44", ctx, "")
 					v.check(prefix+"barcode", normalized, template.InputValidation{
 						ExactLength: 44, NumericOnly: true,
 					})

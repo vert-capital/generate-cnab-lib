@@ -892,6 +892,8 @@ os.WriteFile("retorno.json", jsonBytes, 0644)
 
 - O campo `tax_type` é obrigatório e determina a forma de pagamento e o segmento a ser usado
 - **Com código de barras** (`CONCESSIONARIA`, `GNRE`): `barcode` obrigatório com 48 posições numéricas. Usa Segmento `O`
+- No Itaú, o campo 018-065 do Segmento O leva a **representação numérica de 48 dígitos** (11 dígitos + DV por campo). O código de barras de 44 é aceito e convertido, com os DVs de campo recompostos — gravar os 44 crus deixa 062-065 em branco e o banco recusa com "caracter inválido na posição 54"
+- No Itaú, o par **tipo x forma** do header do lote sai do segmento da guia: prefeitura (segmento 1) `22 x 19`, concessionária (2, 3 e 4) `20 x 13`, órgão governamental e demais `22 x 91`. Um `payment_method` informado no payload é ignorado nesse caso
 - **Sem código de barras** (`DARF`, `DARF_SIMPLES`, `GPS`, `GARE_SP_ICMS`, `IPVA`, `DPVAT`, `FGTS`): `metadata.dados_tributo` obrigatório com 178 posições. Usa Segmento `N`
 
 ## Licença
