@@ -248,8 +248,8 @@
           11
         ],
         "type": "num",
-        "value": "98",
-        "description": "98=Diversos"
+        "value": "20",
+        "description": "20=Fornecedores, o mesmo tipo do lote de transferências. Tipo e forma andam em par: sob 98 x 45 o Itaú devolveu o lote inteiro rejeitado (ocorrência RJ HA no header, retorno P0082108), enquanto os lotes de transferência com tipo 20 são pagos"
       },
       "forma_pagamento": {
         "pos": [
