@@ -256,8 +256,11 @@ func resolveFieldValue(
 		if err != nil && field.Required {
 			return "", fmt.Errorf("source '%s': %w", field.Source, err)
 		}
+		if val == "" {
+			return field.Default, nil
+		}
 		return val, nil
 	}
 
-	return "", nil
+	return field.Default, nil
 }
