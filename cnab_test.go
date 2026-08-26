@@ -79,7 +79,10 @@ func TestGenerate_PIXConta(t *testing.T) {
 
 	headerLote := lines[1]
 	assert.Equal(t, "341", headerLote[0:3])
-	assert.Equal(t, "45", headerLote[11:13])
+	// Tipo x forma (010-013) andam em par no Itaú: o par 98 x 45 voltou com o lote
+	// inteiro rejeitado (ocorrência RJ HA no header, retorno P0082108), enquanto o
+	// tipo 20 do lote de transferências é pago. Ver cnab240_pix_conta.json.
+	assert.Equal(t, "2045", headerLote[9:13])
 
 	segmentoA := lines[2]
 	assert.Equal(t, "341", segmentoA[0:3])

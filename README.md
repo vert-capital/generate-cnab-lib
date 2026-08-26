@@ -872,6 +872,7 @@ os.WriteFile("retorno.json", jsonBytes, 0644)
 - **NOTA 44:** Agência é preenchida automaticamente na posição 225-229 do Segmento A (obrigatório para PIX via conta)
 - **NOTA 46:** Campo `external_id` (Seu Número) é obrigatório
 - **NOTA 8:** Cancelamento de PIX não gera arquivo retorno; PIX agendado só pode ser cancelado via Itaú na Internet
+- No Itaú, o par **tipo x forma** do header do lote (010-013) sai como `20 x 45` — o mesmo tipo `20` (Fornecedores) do lote de transferências, que o banco paga. Sob `98 x 45` o lote inteiro voltou rejeitado, com a ocorrência `RJ HA` no header (retorno `P0082108`)
 
 ### TED (cnab240_transferencia)
 
