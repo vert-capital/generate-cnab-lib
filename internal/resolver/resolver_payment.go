@@ -519,12 +519,19 @@ func (r *Resolver) registerPaymentResolvers() {
 // quanto nomes textuais (case-insensitive) para melhor UX da API.
 //
 // Mapeamento Itaú: 01=Telefone, 02=Email, 03=CPF/CNPJ, 04=Chave Aleatória
+//
+// O código numérico é ambíguo: 04 é "Celular" na numeração do BACEN e "Chave
+// Aleatória" na do layout, e as duas leituras chegam aqui como o mesmo "04".
+// Por isso, quando o FORMATO da chave decide o tipo (UUID, "@", "+", CPF/CNPJ
+// puro), ele tem precedência sobre o número — é a única informação inequívoca que
+// temos, e é a mesma que o banco confere ao validar o par tipo x chave. O número
+// só é usado quando a chave não se classifica sozinha.
 func resolvePixKeyType(raw, pixKey, bankCode string) string {
 	normalized := strings.ToUpper(strings.TrimSpace(raw))
 
-	// 1. Nomes textuais
+	// 1. Nomes textuais (forma preferida de informar o tipo: não é ambígua)
 	switch normalized {
-	case "TELEFONE", "PHONE":
+	case "TELEFONE", "PHONE", "CELULAR":
 		return "01"
 	case "EMAIL", "E-MAIL":
 		return "02"
@@ -550,7 +557,13 @@ func resolvePixKeyType(raw, pixKey, bankCode string) string {
 		return "05"
 	}
 
-	// 2. Códigos legados do README (Itaú). BTG segue os códigos Febraban direto,
+	// 2. Formato da chave, quando decide. Vem antes do código numérico porque
+	// desambigua o 04/05 legado sem precisar adivinhar qual tabela o chamador usou.
+	if inferred := inferPixKeyType(pixKey); inferred != "" {
+		return inferred
+	}
+
+	// 3. Códigos legados do README (Itaú). BTG segue os códigos Febraban direto,
 	// então a conversão legada não se aplica.
 	if bankCode != "208" {
 		switch normalized {
@@ -561,37 +574,68 @@ func resolvePixKeyType(raw, pixKey, bankCode string) string {
 		}
 	}
 
-	// 3. Códigos diretos
+	// 4. Códigos diretos
 	switch normalized {
 	case "01", "02", "03", "04":
 		return normalized
 	}
 
-	// 4. Inferência
-	if pixKey != "" {
-		if strings.Contains(pixKey, "@") {
-			return "02"
-		}
-		if strings.HasPrefix(pixKey, "+") {
-			return "01"
-		}
-		if strings.Contains(pixKey, "-") {
-			return "04"
-		}
+	return raw
+}
 
-		onlyDigits := true
-		for _, r := range pixKey {
-			if r < '0' || r > '9' {
-				onlyDigits = false
-				break
-			}
-		}
-		if onlyDigits && (len(pixKey) == 11 || len(pixKey) == 14) {
-			return "03"
+// inferPixKeyType deduz o tipo da chave a partir do formato em que o BACEN a
+// registra, ou "" quando o formato não decide.
+//
+// Telefone só existe em E.164, com "+", e é isso que separa um celular de um CPF:
+// 11 dígitos puros são sempre CPF. A chave aleatória é um UUID canônico — checar
+// o formato inteiro, e não só a presença de "-", evita confundi-la com um CPF
+// mascarado ("123.456.789-01").
+func inferPixKeyType(pixKey string) string {
+	key := strings.TrimSpace(pixKey)
+	if key == "" {
+		return ""
+	}
+	if strings.Contains(key, "@") {
+		return "02"
+	}
+	if strings.HasPrefix(key, "+") {
+		return "01"
+	}
+	if isUUID(key) {
+		return "04"
+	}
+	onlyDigits := true
+	for _, r := range key {
+		if r < '0' || r > '9' {
+			onlyDigits = false
+			break
 		}
 	}
+	if onlyDigits && (len(key) == 11 || len(key) == 14) {
+		return "03"
+	}
+	return ""
+}
 
-	return raw
+// isUUID valida o UUID canônico (8-4-4-4-12 hexadecimais), formato da chave
+// aleatória (EVP) emitida pelo BACEN.
+func isUUID(s string) bool {
+	groups := strings.Split(s, "-")
+	if len(groups) != 5 {
+		return false
+	}
+	for i, want := range []int{8, 4, 4, 4, 12} {
+		if len(groups[i]) != want {
+			return false
+		}
+		for _, r := range groups[i] {
+			isHex := (r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F')
+			if !isHex {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func formatNum(v float64, length int) string {

@@ -106,6 +106,24 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 		detailSegments = []string{"a", "b"}
 	}
 
+	// Chave PIX informada num template que não tem onde gravá-la (ex.: o
+	// cnab240_pix_conta do Bradesco traz o Segmento B genérico da FEBRABAN, com
+	// endereço/vencimento e nenhum campo de chave). O arquivo sai válido, mas pago
+	// por agência/conta — o oposto do que quem mandou a chave pediu. Sem aviso isso
+	// só apareceria na conciliação.
+	if !templateGravaChavePix(tmpl, detailSegments) {
+		for i := range input.Payments {
+			if input.Payments[i].RecipientPixKey == "" {
+				continue
+			}
+			warnings = append(warnings, fmt.Sprintf(
+				"pagamento %s informou chave PIX, mas o template %s do banco %s não possui campo de chave: o pagamento sairá por agência/conta",
+				input.Payments[i].ExternalID, templateName, input.BankCode,
+			))
+			break
+		}
+	}
+
 	headerLote, err := generateSegment(tmpl, headerLoteKey, ctx, resolv, 0)
 	if err != nil {
 		return nil, fmt.Errorf("erro ao gerar header lote: %w", err)
@@ -184,6 +202,26 @@ func generate(goCtx context.Context, input Input, templateName string) (*Result,
 		TotalAmount:  totalAmount,
 		Warnings:     warnings,
 	}, nil
+}
+
+// templateGravaChavePix informa se algum segmento de detalhe do template tem
+// campo alimentado pela chave PIX do favorecido. Serve para avisar quando a chave
+// chega num layout que não a suporta, em vez de descartá-la em silêncio.
+func templateGravaChavePix(tmpl template.Config, detailSegments []string) bool {
+	for _, segCode := range detailSegments {
+		segKey := "segmento_" + strings.ReplaceAll(strings.ToLower(segCode), "-", "")
+		seg, ok := tmpl.Segments[segKey]
+		if !ok {
+			continue
+		}
+		for _, field := range seg.SortedFields {
+			switch field.Config.Source {
+			case "payment.recipient_pix_key", "payment.pix_key":
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // parTipoFormaTributo descreve o par tipo x forma que a guia exige no header do
