@@ -141,6 +141,12 @@ Transferência PIX utilizando chave PIX (CPF, CNPJ, Email, Celular ou Chave Alea
 > - UUID canônico (`8-4-4-4-12`) → `04` (chave aleatória)
 > - 11 ou 14 dígitos puros → `03` (CPF/CNPJ). **11 dígitos sem `+` são CPF, nunca celular.**
 >
+> Por causa dessa última regra, **chave de telefone precisa chegar em E.164, com o
+> `+`**: um celular nacional (`62981817373`) tem os mesmos 11 dígitos de um CPF e
+> seria gravado como `03`. Quem monta o payload é responsável por normalizar — no
+> Contas isso é feito em `payment_helpers/pix_key_utils.py`, a partir do
+> `pix_type` que a API OPS informa.
+>
 > **Retrocompatibilidade:** para chaves cujo formato não decide, a biblioteca ainda
 > converte os códigos do padrão anterior (BACEN): `05` → `04` e `04` → `01`.
 
