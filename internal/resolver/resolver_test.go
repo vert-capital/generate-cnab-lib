@@ -657,6 +657,17 @@ func TestResolvePixKeyType(t *testing.T) {
 		// Inferência por UUID
 		{"infer UUID", "", "abc12345-1234-1234-1234-123456789abc", "04"},
 
+		// O formato da chave desempata o código numérico ambíguo: "04" é Celular
+		// na numeração BACEN e Chave Aleatória na do layout, e chegam iguais aqui.
+		{"04 com UUID é chave aleatória, não telefone", "04", "abc12345-1234-1234-1234-123456789abc", "04"},
+		{"04 com telefone continua telefone", "04", "+5511999999999", "01"},
+		{"01 com CPF é CPF/CNPJ", "01", "12345678901", "03"},
+		{"03 com email é email", "03", "test@example.com", "02"},
+		{"CELULAR textual", "CELULAR", "+5511999999999", "01"},
+
+		// CPF mascarado não é UUID: o "-" sozinho não caracteriza chave aleatória.
+		{"CPF mascarado não vira EVP", "", "123.456.789-01", ""},
+
 		// Vazio e Inferência
 		{"empty", "", "", ""},
 		{"nil metadata", "", "test@example.com", "02"},

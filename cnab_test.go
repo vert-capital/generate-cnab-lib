@@ -976,6 +976,154 @@ func TestGenerate_BTG_PIXChave(t *testing.T) {
 	assert.Equal(t, "123E4567-E89B-12D3-A456-426614174000", trimRight(segmentoB[127:226]), "chave PIX nas posições 128-226")
 }
 
+// PIX por chave no Itaú: a chave vai no Segmento B (128-227) com o tipo em 15-16,
+// e o Segmento A marca a transferência como chave de endereçamento (04) em vez de
+// conta corrente (01). Agência/conta continuam preenchidas — o que muda a forma de
+// iniciação para o banco é a chave, não a ausência dos dados bancários.
+func TestGenerate_Itau_PIXChave(t *testing.T) {
+	casos := []struct {
+		nome         string
+		chave        string
+		keyType      string
+		tipoEsperado string
+	}{
+		{"cpf", "12345678901", "03", "03"},
+		{"cnpj", "12345678000195", "03", "03"},
+		{"email", "fulano@empresa.com.br", "02", "02"},
+		{"celular", "+5511999998888", "01", "01"},
+		{"aleatoria", "123e4567-e89b-12d3-a456-426614174000", "04", "04"},
+	}
+
+	for _, caso := range casos {
+		t.Run(caso.nome, func(t *testing.T) {
+			input := Input{
+				ExternalID: "pix-chave-001",
+				OriginID:   1,
+				BankCode:   "341",
+				Company: CompanyData{
+					CNPJ:         "12345678000195",
+					CompanyName:  "EMPRESA TESTE LTDA",
+					BankCode:     "341",
+					Agency:       "1234",
+					Account:      "123456",
+					AccountDigit: "5",
+				},
+				Payments: []PaymentData{
+					{
+						ExternalID:           "PAY-PIX-CHAVE-01",
+						RecipientDocument:    "12345678901",
+						RecipientCompanyName: "JOSE DA SILVA",
+						RecipientBank:        "341",
+						RecipientAgency:      "5678",
+						RecipientAccount:     "876543",
+						ISPB:                 "60701190",
+						Amount:               100.00,
+						DueDate:              "20260330",
+						RecipientPixKey:      caso.chave,
+						Metadata: map[string]interface{}{
+							"key_type": caso.keyType,
+						},
+					},
+				},
+			}
+
+			result, err := Generate(context.Background(), input, "cnab240_pix_conta")
+			require.NoError(t, err)
+			assert.Empty(t, result.Warnings, "template do Itaú grava chave PIX, não deve avisar")
+
+			lines := splitLines(result.Content)
+			segmentoA, segmentoB := lines[2], lines[3]
+
+			assert.Equal(t, "45", lines[1][11:13], "forma de lançamento PIX")
+			assert.Equal(t, "009", segmentoA[17:20], "câmara PIX (SPI)")
+			assert.Equal(t, "04", segmentoA[112:114], "identificação da transferência = chave de endereçamento")
+			assert.Equal(t, caso.tipoEsperado, segmentoB[14:16], "tipo da chave (Nota 37)")
+			assert.Equal(t, strings.ToUpper(caso.chave), trimRight(segmentoB[127:227]), "chave PIX em 128-227")
+		})
+	}
+}
+
+// Sem chave, o PIX continua saindo por agência/conta: identificação 01 (conta
+// corrente) e Segmento B sem tipo nem chave. É o comportamento histórico.
+func TestGenerate_Itau_PIXSemChave_UsaAgenciaConta(t *testing.T) {
+	input := Input{
+		ExternalID: "pix-conta-001",
+		OriginID:   1,
+		BankCode:   "341",
+		Company: CompanyData{
+			CNPJ:         "12345678000195",
+			CompanyName:  "EMPRESA TESTE LTDA",
+			BankCode:     "341",
+			Agency:       "1234",
+			Account:      "123456",
+			AccountDigit: "5",
+		},
+		Payments: []PaymentData{
+			{
+				ExternalID:           "PAY-PIX-CONTA-01",
+				RecipientDocument:    "12345678901",
+				RecipientCompanyName: "JOSE DA SILVA",
+				RecipientBank:        "341",
+				RecipientAgency:      "5678",
+				RecipientAccount:     "876543",
+				ISPB:                 "60701190",
+				Amount:               100.00,
+				DueDate:              "20260330",
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_pix_conta")
+	require.NoError(t, err)
+	assert.Empty(t, result.Warnings)
+
+	lines := splitLines(result.Content)
+	segmentoA, segmentoB := lines[2], lines[3]
+	assert.Equal(t, "01", segmentoA[112:114], "sem chave, transferência é conta corrente")
+	assert.Equal(t, "  ", segmentoB[14:16], "tipo da chave em branco")
+	assert.Empty(t, trimRight(segmentoB[127:227]), "chave PIX em branco")
+}
+
+// O cnab240_pix_conta do Bradesco usa o Segmento B genérico da FEBRABAN, que não
+// tem campo de chave. O arquivo sai válido (pago por agência/conta), mas quem
+// mandou a chave precisa saber que ela foi descartada.
+func TestGenerate_Bradesco_PIXChave_AvisaQueTemplateNaoSuporta(t *testing.T) {
+	input := Input{
+		ExternalID: "pix-chave-bradesco-001",
+		OriginID:   1,
+		BankCode:   "237",
+		Company: CompanyData{
+			CNPJ:         "12345678000195",
+			CompanyName:  "EMPRESA TESTE LTDA",
+			BankCode:     "237",
+			Agency:       "1234",
+			Account:      "123456",
+			AccountDigit: "5",
+		},
+		Payments: []PaymentData{
+			{
+				ExternalID:           "PAY-PIX-CHAVE-01",
+				RecipientDocument:    "12345678901",
+				RecipientCompanyName: "JOSE DA SILVA",
+				RecipientBank:        "341",
+				RecipientAgency:      "5678",
+				RecipientAccount:     "876543",
+				ISPB:                 "60701190",
+				Amount:               100.00,
+				DueDate:              "20260330",
+				RecipientPixKey:      "12345678901",
+				Metadata:             map[string]interface{}{"key_type": "03"},
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_pix_conta")
+	require.NoError(t, err)
+	require.Len(t, result.Warnings, 1)
+	assert.Contains(t, result.Warnings[0], "não possui campo de chave")
+	assert.Contains(t, result.Warnings[0], "PAY-PIX-CHAVE-01")
+}
+
 func TestGenerate_BTG_Boleto(t *testing.T) {
 	input := Input{
 		ExternalID: "btg-boleto-batch-001",

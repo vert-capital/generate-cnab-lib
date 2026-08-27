@@ -110,27 +110,39 @@ Transferência PIX utilizando chave PIX (CPF, CNPJ, Email, Celular ou Chave Alea
       "due_date": "20260410",
       "recipient_pix_key": "123e4567-e89b-12d3-a456-426614174000",
       "metadata": {
-        "key_type": "04"
+        "key_type": "EVP"
       }
     }
   ]
 }
 ```
 
-**Mapeamento de `key_type` (código Itaú - Nota 37):**
+**Mapeamento de `key_type` (código Itaú - Nota 37, igual no BTG e no Santander):**
 
-| Tipo | Código |
-|------|--------|
-| Telefone | `01` |
-| E-mail | `02` |
-| CPF/CNPJ | `03` |
-| Chave Aleatória (EVP) | `04` |
+| Tipo | Código | Nome aceito em `key_type` |
+|------|--------|---------------------------|
+| Telefone | `01` | `TELEFONE`, `CELULAR`, `PHONE` |
+| E-mail | `02` | `EMAIL`, `E-MAIL` |
+| CPF/CNPJ | `03` | `CPF`, `CNPJ` |
+| Chave Aleatória (EVP) | `04` | `EVP`, `CHAVE_ALEATORIA` |
 
+> **Prefira o NOME ao código.** O código numérico é ambíguo: na numeração do BACEN
+> `01`=CPF, `02`=CNPJ, `03`=E-mail, `04`=Celular e `05`=EVP, enquanto na do layout
+> (tabela acima) `01`=Telefone, `02`=E-mail, `03`=CPF/CNPJ e `04`=Aleatória. As duas
+> tabelas usam os mesmos números para coisas diferentes; o nome não tem esse problema.
+>
 > Ao enviar `recipient_pix_key`, o campo `metadata.key_type` é obrigatório. Os campos `recipient_agency` e `recipient_account` podem ser omitidos.
 >
-> **Retrocompatibilidade:** A biblioteca também aceita os códigos `01` a `05` do padrão anterior (BACEN) e converte internamente para o padrão Itaú:
-> - `05` (Chave Aleatória BACEN) → `04` (Itaú)
-> - `04` (Celular BACEN) → `01` (Telefone Itaú)
+> **Desempate pelo formato da chave.** Quando o formato da chave decide o tipo, ele
+> tem precedência sobre o código numérico informado — é a mesma informação que o
+> banco confere ao validar o par tipo x chave:
+> - contém `@` → `02` (e-mail)
+> - começa com `+` → `01` (telefone, único formato em que o BACEN registra celular)
+> - UUID canônico (`8-4-4-4-12`) → `04` (chave aleatória)
+> - 11 ou 14 dígitos puros → `03` (CPF/CNPJ). **11 dígitos sem `+` são CPF, nunca celular.**
+>
+> **Retrocompatibilidade:** para chaves cujo formato não decide, a biblioteca ainda
+> converte os códigos do padrão anterior (BACEN): `05` → `04` e `04` → `01`.
 
 **Campos específicos:**
 
@@ -557,7 +569,7 @@ inputPixKey := cnab.Input{
             Amount:               500.75,
             DueDate:              "20260410",
             Metadata: map[string]interface{}{
-                "key_type": "05",
+                "key_type": "EVP",
             },
         },
     },
@@ -872,6 +884,7 @@ os.WriteFile("retorno.json", jsonBytes, 0644)
 - **NOTA 44:** Agência é preenchida automaticamente na posição 225-229 do Segmento A (obrigatório para PIX via conta)
 - **NOTA 46:** Campo `external_id` (Seu Número) é obrigatório
 - **NOTA 8:** Cancelamento de PIX não gera arquivo retorno; PIX agendado só pode ser cancelado via Itaú na Internet
+- O `cnab240_pix_conta` do **Bradesco** usa o Segmento B genérico da FEBRABAN (endereço/vencimento) e **não tem campo de chave**: chave informada nesse template é descartada e o pagamento sai por agência/conta. A geração emite um aviso em `Result.Warnings` nesse caso
 - No Itaú, o par **tipo x forma** do header do lote (010-013) sai como `20 x 45` — o mesmo tipo `20` (Fornecedores) do lote de transferências, que o banco paga. Sob `98 x 45` o lote inteiro voltou rejeitado, com a ocorrência `RJ HA` no header (retorno `P0082108`)
 
 ### TED (cnab240_transferencia)
