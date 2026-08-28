@@ -306,7 +306,30 @@ func (r *Resolver) registerPaymentResolvers() {
 				raw = interfaceToString(val)
 			}
 		}
-		return resolvePixKeyType(raw, ctx.CurrentPayment.RecipientPixKey, ctx.Company.BankCode)
+		tipo := resolvePixKeyType(raw, ctx.CurrentPayment.RecipientPixKey, ctx.Company.BankCode)
+
+		// Tipo de chave SEM chave é registro contraditório: o Segmento A sai com
+		// 01/03/PG (dados bancários, porque payment.tipo_conta só usa 04 quando há
+		// chave) e o Segmento B afirmaria um tipo de chave que não existe no
+		// arquivo. Pela Nota 37 do Itaú o campo só vale para o modelo "Chave Pix",
+		// com 04 nas posições 113-114.
+		//
+		// Acontece quando o chamador manda metadata.key_type e perde a chave no
+		// caminho, e é exatamente o tipo de erro que ninguém vê: o arquivo é aceito
+		// pelo gerador, o pagamento sai por agência/conta e o Segmento B fica
+		// mentindo. Aqui o campo volta em branco e o aviso registra o descarte.
+		//
+		// O 05 (dados bancários, BTG/Santander) é legítimo sem chave e passa.
+		if ctx.CurrentPayment.RecipientPixKey == "" && tipo != "" && tipo != "05" {
+			if ctx.Warnings != nil {
+				*ctx.Warnings = append(*ctx.Warnings, fmt.Sprintf(
+					"pagamento %s informou key_type %q sem chave PIX: o tipo foi descartado do Segmento B para o registro não contradizer o Segmento A, e o pagamento sai por agência/conta",
+					ctx.CurrentPayment.ExternalID, raw,
+				))
+			}
+			return ""
+		}
+		return tipo
 	}
 	r.resolvers["payment.tax_type"] = paymentResolver(func(p *types.PaymentData) string {
 		return p.TaxType
