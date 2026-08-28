@@ -1043,6 +1043,94 @@ func TestGenerate_Itau_PIXChave(t *testing.T) {
 	}
 }
 
+// key_type sem chave: registro contraditório que o gerador aceitava calado.
+//
+// Caso real de produção (agosto/2026): o Contas montava a chave, o serializer do
+// payload a descartava por não declarar o campo, e a mensagem chegava ao motor com
+// metadata.key_type="EVP" e sem chave. O arquivo saía com o Segmento A dizendo
+// "01 = conta corrente" e o Segmento B dizendo "04 = chave aleatória" com o campo
+// da chave em branco — o pagamento ia por agência/conta e o Segmento B mentia.
+//
+// Pela Nota 37 do Itaú o tipo de chave só vale para o modelo "Chave Pix" (04 nas
+// posições 113-114), então sem chave o campo tem de sair em branco. E com aviso:
+// o chamador perdeu a chave no caminho e precisa saber.
+func TestGenerate_Itau_KeyTypeSemChave_DescartaTipoEAvisa(t *testing.T) {
+	input := Input{
+		ExternalID: "pix-key-type-sem-chave",
+		OriginID:   1,
+		BankCode:   "341",
+		Company: CompanyData{
+			CNPJ:         "12345678000195",
+			CompanyName:  "EMPRESA TESTE LTDA",
+			BankCode:     "341",
+			Agency:       "1234",
+			Account:      "123456",
+			AccountDigit: "5",
+		},
+		Payments: []PaymentData{
+			{
+				ExternalID:            "PAY-SEM-CHAVE",
+				RecipientDocument:     "12345678901",
+				RecipientCompanyName:  "JOSE DA SILVA",
+				RecipientBank:         "341",
+				RecipientAgency:       "5678",
+				RecipientAccount:      "876543",
+				RecipientAccountDigit: "4",
+				ISPB:                  "60701190",
+				Amount:                100.00,
+				DueDate:               "20260330",
+				// Sem RecipientPixKey, mas com o tipo informado.
+				Metadata: map[string]interface{}{"key_type": "EVP"},
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_pix_conta")
+	require.NoError(t, err)
+
+	lines := splitLines(result.Content)
+	segmentoA, segmentoB := lines[2], lines[3]
+
+	assert.Equal(t, "01", segmentoA[112:114], "sem chave, a transferência é por dados bancários")
+	assert.Equal(t, "  ", segmentoB[14:16], "tipo da chave tem de sair em branco, para não contradizer o Segmento A")
+	assert.Empty(t, trimRight(segmentoB[127:227]), "campo da chave vazio")
+
+	require.Len(t, result.Warnings, 1, "o descarte do tipo precisa aparecer")
+	assert.Contains(t, result.Warnings[0], "PAY-SEM-CHAVE")
+	assert.Contains(t, result.Warnings[0], "sem chave PIX")
+}
+
+// BTG e Santander usam 05 = dados bancários, que é legítimo SEM chave — o descarte
+// acima não pode alcançar esse caso.
+func TestGenerate_BTG_DadosBancarios05_SemChaveNaoEDescartado(t *testing.T) {
+	input := Input{
+		ExternalID: "btg-pix-conta-05",
+		BankCode:   "208",
+		Company:    btgCompany(),
+		Payments: []PaymentData{
+			{
+				ExternalID:            "PAY-BTG-CONTA",
+				RecipientDocument:     "12345678901",
+				RecipientCompanyName:  "MARIA OLIVEIRA",
+				RecipientBank:         "341",
+				RecipientAgency:       "1234",
+				RecipientAccount:      "98765",
+				RecipientAccountDigit: "4",
+				ISPB:                  "60701190",
+				Amount:                250.00,
+				DueDate:               "20260730",
+			},
+		},
+	}
+
+	result, err := Generate(context.Background(), input, "cnab240_pix_conta")
+	require.NoError(t, err)
+
+	segmentoB := splitLines(result.Content)[3]
+	assert.Equal(t, "05", segmentoB[14:16], "05 = dados bancários é válido sem chave")
+	assert.Empty(t, result.Warnings, "não é descarte, não deve avisar")
+}
+
 // Sem chave, o PIX continua saindo por agência/conta: identificação 01 (conta
 // corrente) e Segmento B sem tipo nem chave. É o comportamento histórico.
 func TestGenerate_Itau_PIXSemChave_UsaAgenciaConta(t *testing.T) {
