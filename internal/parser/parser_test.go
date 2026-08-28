@@ -101,7 +101,8 @@ func TestParseSegmentoJ(t *testing.T) {
 			92:  "20260330",
 			183: "PAY-BOLETO-001",
 			203: "NOSSO123",
-			225: "00",
+			// Ocorrências do retorno: posições 231-240, como em todo registro CNAB240.
+			231: "00",
 		}),
 		buildTrailerLote(),
 		buildTrailerArquivo(),

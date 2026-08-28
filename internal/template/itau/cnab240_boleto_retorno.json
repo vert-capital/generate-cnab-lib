@@ -79,8 +79,8 @@
       "referencia": {"pos": [183, 202], "type": "alfa", "description": "Número de referência/documento"},
       "nosso_numero": {"pos": [203, 222], "type": "alfa", "description": "Nosso Número no banco"},
       "codigo_moeda": {"pos": [223, 224], "type": "num", "description": "Código da moeda"},
-      "ocorrencias": {"pos": [225, 232], "type": "alfa", "description": "Código de ocorrências do retorno"},
-      "numero_documento_debito": {"pos": [233, 240], "type": "num", "description": "Número documento débito"}
+      "uso_febraban": {"pos": [225, 230], "type": "alfa", "description": "Uso Exclusivo FEBRABAN/CNAB"},
+      "ocorrencias": {"pos": [231, 240], "type": "alfa", "description": "Códigos das ocorrências do retorno (até 5 códigos de 2 posições)"}
     },
     "segmento_b": {
       "codigo_banco": {"pos": [1, 3], "type": "num", "value": "341"},
